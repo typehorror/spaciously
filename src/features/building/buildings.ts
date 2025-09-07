@@ -19,13 +19,11 @@ export const getColonyLander = (): NewBuilding => {
       discoveries: [],
       buildings: [],
     },
+    energy: {
+      consumption: 1000,
+      production: 5000,
+    },
     maintenance: [
-      {
-        resource: GeneratedResourceName.ENERGY,
-        quantity: 1,
-        period: 60000,
-        multiplier: { [GeneratedResourceName.POPULATION]: 0.1 },
-      },
       {
         resource: ResourceName.BIOMASS,
         quantity: 1,
@@ -51,18 +49,12 @@ export const getColonyLander = (): NewBuilding => {
     },
     production: [
       {
-        name: "Energy Production",
-        resource: GeneratedResourceName.ENERGY,
-        quantity: 5,
-        period: 30000,
-        cost: {},
-      },
-      {
         name: "Gas Production",
         resource: ResourceName.GAS,
         quantity: 1,
-        period: 30000,
-        cost: { [GeneratedResourceName.ENERGY]: 1 },
+        period: 3000,
+        cost: {},
+        energyUsage: 1000, // 1kWh per production cycle
       },
       {
         name: "Population Growth",
@@ -70,13 +62,15 @@ export const getColonyLander = (): NewBuilding => {
         quantity: 1,
         period: 60000,
         cost: { [ResourceName.BIOMASS]: 10 },
+        energyUsage: 500, // 0.5kWh per production cycle
       },
       {
         name: "Ore Production",
         resource: ResourceName.ORE,
         quantity: 1,
-        period: 20000, // 20 seconds
-        cost: { [GeneratedResourceName.ENERGY]: 1 },
+        period: 2000, // 20 seconds
+        cost: {},
+        energyUsage: 1000, // 1kWh per production cycle
       },
     ],
     expansion: [
@@ -93,15 +87,6 @@ export const getColonyLander = (): NewBuilding => {
           population: {
             capacity: 20,
           },
-          production: [
-            {
-              name: "Population Growth",
-              resource: GeneratedResourceName.POPULATION,
-              quantity: 2,
-              period: 60000,
-              cost: { [ResourceName.BIOMASS]: 10 },
-            },
-          ],
         },
       },
       {
@@ -156,13 +141,9 @@ export const getColonyLander = (): NewBuilding => {
           [ResourceName.GAS]: 50,
         },
         modifier: {
-          production: [
-            {
-              name: "Energy Production",
-              resource: GeneratedResourceName.ENERGY,
-              quantity: 3,
-            },
-          ],
+          energy: {
+            production: 7,
+          },
         },
       },
     ],

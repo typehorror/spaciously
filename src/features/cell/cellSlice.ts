@@ -1,72 +1,62 @@
-import { createSelector, type PayloadAction } from "@reduxjs/toolkit"
+import {
+  createDraftSafeSelector,
+  createEntityAdapter,
+  type PayloadAction,
+} from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
 import type { Cell, CellCoord, NewCell } from "./types"
 import { getCellId } from "./utils"
 import { type RootState } from "@/app/store"
-import { filter } from "lodash"
 
-export type CellIndex = Partial<Record<string, Cell>>
-
-type CellState = {
-  cellIndex: CellIndex
-}
-
-const initialState: CellState = {
-  cellIndex: {},
-}
+const cellAdapter = createEntityAdapter({
+  selectId: (cell: Cell) => cell.id,
+  sortComparer: (a, b) => a.id.localeCompare(b.id),
+})
 
 export const cellSlice = createAppSlice({
   name: "cell",
-  initialState,
+  initialState: cellAdapter.getInitialState(),
   reducers: {
     addCells: (
       state,
       action: PayloadAction<{ cells: NewCell[]; planetId: number }>,
     ) => {
-      const { cells, planetId } = action.payload
-
-      // prevent overwriting existing cells
-      // if (planetId in state.cellByPlanet) {
-      //   throw new Error(`Cells for planet ${planetId.toString()} already set`)
-      // }
-      // state.cellByPlanet[planetId] = []
-
-      for (const newCell of cells) {
-        const cell = {
-          buildingId: null,
-          ...newCell,
-          planetId: planetId,
-          id: getCellId(newCell, planetId),
-        }
-        state.cellIndex[cell.id] = cell
-        // state.cellByPlanet[planetId].push(cell)
-      }
+      const cells = action.payload.cells.map(
+        (c): Cell => ({
+          ...c,
+          planetId: action.payload.planetId,
+          id: getCellId(c, action.payload.planetId),
+        }),
+      )
+      cellAdapter.addMany(state, cells)
     },
   },
 
   selectors: {
-    getCellIndex: (state): CellIndex => state.cellIndex,
-    getCellById: (state, id: string) => state.cellIndex[id],
     getCellByCoord: (
       state,
       planetId: number,
       coord: CellCoord,
     ): Cell | undefined => {
       const id = getCellId(coord, planetId)
-      return state.cellIndex[id]
+      return cellAdapter.getSelectors().selectById(state, id)
     },
+    getCellIndex: state => cellAdapter.getSelectors().selectEntities(state),
   },
 })
 
 export const { addCells } = cellSlice.actions
-export const { getCellById, getCellByCoord, getCellIndex } = cellSlice.selectors
+export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
-export const getCellsByPlanetId = createSelector(
-  (state: RootState, planetId: number): Cell[] | undefined =>
-    Object.values(state.cell.cellIndex)
-      .filter(c => c !== undefined)
-      .filter(c => c.planetId === planetId),
-  cells => cells ?? [],
+export const { selectAll: getAllCells, selectById: getCellById } =
+  cellAdapter.getSelectors((state: RootState) => state.cell)
+
+export const getCellsByPlanetId = createDraftSafeSelector(
+  [
+    (state: RootState) => cellAdapter.getSelectors().selectAll(state.cell),
+    (_: RootState, planetId: number) => planetId,
+  ],
+  (cells, planetId) => cells.filter(c => c.planetId === planetId),
 )
 
 type CellIdOrCoord = { cellId: string } | { coord: CellCoord; planetId: number }

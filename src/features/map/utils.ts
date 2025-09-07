@@ -1,6 +1,6 @@
 import type { Cell, CellCoord } from "../cell/types"
 import { type CellIndex } from "../cell/cellSlice"
-import { getCellCoordFromId, getCellId } from "../cell/utils"
+import { parseCellId, getCellId } from "../cell/utils"
 
 // FIXME: Should handle boundaries of the map wrap around it
 export const getNeighborCoords = (cellCoord: CellCoord, cells: Cell[]) => {
@@ -66,7 +66,7 @@ export function hasClaimedNeighbor(
   cellId: string,
   cellIndex: CellIndex,
 ): boolean {
-  const { planetId, q, r } = getCellCoordFromId(cellId)
+  const { planetId, q, r } = parseCellId(cellId)
   const cells = Object.values(cellIndex)
     .filter(c => c !== undefined)
     .filter(c => c.planetId === planetId)

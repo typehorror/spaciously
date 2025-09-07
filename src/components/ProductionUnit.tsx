@@ -19,7 +19,7 @@ export const ProductionUnit = ({ production }: Props) => {
   const isActive = !!producer
 
   const onToggleProduction = () => {
-    dispatch(toggleProduction(production))
+    dispatch(toggleProduction({ production, activate: !isActive }))
   }
 
   // When the value stays the same between rendering (like 1.01% twice)
@@ -37,7 +37,7 @@ export const ProductionUnit = ({ production }: Props) => {
       aria-label={`Turn on ${production.name} production`}
     >
       <div className="flex-col flex w-full space-y-2">
-        <div className="flex flex-row space-x-1 justify-between items-end">
+        <div className="flex flex-row space-x-1 justify-between items-center">
           <div
             className={`flex-1 items-center ${isActive ? "text-green-500 font-bold" : "text-gray-500 group-hover:text-gray-400 font-medium"}`}
           >

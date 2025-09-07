@@ -15,9 +15,7 @@ export function getCellId(coord: CellCoord, planetId: number): string {
  * @param id The cell ID to extract information from.
  * @returns An object containing the cell coordinates and planet ID.
  */
-export function getCellCoordFromId(
-  id: string,
-): CellCoord & { planetId: number } {
+export function parseCellId(id: string): CellCoord & { planetId: number } {
   const [planetId, q, r] = id.split(":").map(Number)
   return { planetId, q, r }
 }

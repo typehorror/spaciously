@@ -4,13 +4,12 @@ import {
   getStorageUnits,
   WAREHOUSE_UNIT_CAPACITY,
 } from "./utils"
-import type { WarehouseContent } from "./types"
+import type { Warehouse } from "./types"
 
 describe("warehouse utils", () => {
   it("returns full empty capacity for an empty warehouse", () => {
-    const w: WarehouseContent = {
+    const w: Warehouse = {
       cellId: "c",
-      id: "w",
       content: {},
       capacity: 3,
     }
@@ -23,9 +22,8 @@ describe("warehouse utils", () => {
   })
 
   it("counts partial unit for a resource and includes empty units", () => {
-    const w: WarehouseContent = {
+    const w: Warehouse = {
       cellId: "c",
-      id: "w",
       content: { iron: 5 },
       capacity: 3,
     }
@@ -43,9 +41,8 @@ describe("warehouse utils", () => {
   })
 
   it("does not count other resources partial space when asking for a different resource", () => {
-    const w: WarehouseContent = {
+    const w: Warehouse = {
       cellId: "c",
-      id: "w",
       content: { iron: 5, copper: 4 },
       capacity: 3,
     }
@@ -62,9 +59,8 @@ describe("warehouse utils", () => {
   })
 
   it("respects warehouse capacity when many resources present", () => {
-    const w: WarehouseContent = {
+    const w: Warehouse = {
       cellId: "c",
-      id: "w",
       content: { a: 8, b: 8, c: 3, d: 1 },
       capacity: 4,
     }
@@ -80,9 +76,8 @@ describe("warehouse utils", () => {
   })
 
   it("storage units for exact multiples produce full units and no extra partial", () => {
-    const w: WarehouseContent = {
+    const w: Warehouse = {
       cellId: "c",
-      id: "w",
       content: { iron: 16 },
       capacity: 4,
     }

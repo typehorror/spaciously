@@ -4,7 +4,7 @@ import { type Cell } from "@/features/cell/types"
 import { getProductionUnitsByCellId } from "@/features/production/productionSlice"
 import { ProductionUnit } from "./ProductionUnit"
 import { getWarehouse } from "@/features/warehouse/warehouseSlice"
-import { type WarehouseContent } from "@/features/warehouse/types"
+import { type Warehouse } from "@/features/warehouse/types"
 import { getStorageUnits } from "@/features/warehouse/utils"
 import { backgroundColor } from "@/features/resources/resources"
 import { range } from "lodash"
@@ -34,7 +34,7 @@ type Props = {
 }
 
 export const BuildingInformation = ({ cell }: Props) => {
-  const building = useAppSelector(state => getBuildingById(state, cell))
+  const building = useAppSelector(state => getBuildingById(state, cell.id))
   const productionUnits = useAppSelector(state =>
     getProductionUnitsByCellId(state, cell),
   )
@@ -69,7 +69,7 @@ export const BuildingInformation = ({ cell }: Props) => {
     )
   }
 
-  const renderWarehouseContent = (warehouse?: WarehouseContent) => {
+  const renderWarehouseContent = (warehouse?: Warehouse) => {
     if (!warehouse) {
       return <span>Empty</span>
     }

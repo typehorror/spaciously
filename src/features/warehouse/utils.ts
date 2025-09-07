@@ -1,9 +1,9 @@
-import { type WarehouseContent } from "./types"
+import { type Warehouse } from "./types"
 
 export const WAREHOUSE_UNIT_CAPACITY = 8
 
 export const getAvailableSpaceForResource = (
-  warehouse: WarehouseContent,
+  warehouse: Warehouse,
   resource: string,
 ) => {
   let availableUnits = warehouse.capacity
@@ -30,7 +30,7 @@ type StorageUnit = {
  * Allows for a simplified rendering by iterating over storage units
  * @param warehouse
  */
-export const getStorageUnits = (warehouse: WarehouseContent): StorageUnit[] => {
+export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
   const storageUnits: StorageUnit[] = []
   for (const resourceName in warehouse.content) {
     const resourceQty = warehouse.content[resourceName] ?? 0

@@ -1,11 +1,8 @@
 import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { getProducers, updateProduction } from "../production/producerSlice"
-import {
-  type ProductionIndex,
-  getProductionIndex,
-} from "../production/productionSlice"
-import { type ActiveProduction } from "../production/types"
+import { getProductionIndex } from "../production/productionSlice"
+import { type Production } from "../production/types"
 
 const TICK_RATE = 100 // 100ms per tick (10 ticks/sec)
 
@@ -15,27 +12,19 @@ export const GameLoop = () => {
   const producers = useAppSelector(getProducers)
   const productionIndex = useAppSelector(getProductionIndex)
 
-  const computeProduction = (
-    producers: ActiveProduction[],
-    productionIndex: ProductionIndex,
-  ) => {
+  const computeProduction = (producers: Production[]) => {
     const results = []
     const now = Date.now()
-    for (const producer of producers) {
+    for (const production of producers) {
       let amount = 0
-      const production = productionIndex[producer.id]
-      if (!production) {
-        console.warn(`No production found for producer ${producer.id}`)
-        continue
-      }
 
-      const progress = now - producer.lastProductionTime
+      const progress = now - production.lastProductionTime
       amount = Math.floor(progress / production.period) * production.quantity
       if (amount > 0) {
         const lastProductionTime = now - (progress % production.period)
 
         results.push({
-          id: producer.id,
+          id: production.id,
           amount,
           resource: production.resource,
           lastProductionTime,
@@ -52,7 +41,7 @@ export const GameLoop = () => {
       const now = Date.now()
       if (now - lastTick.current >= TICK_RATE) {
         lastTick.current = now
-        const production = computeProduction(producers, productionIndex)
+        const production = computeProduction(producers)
         if (production.length > 1) {
           console.log("produced", production.length, "items")
         }

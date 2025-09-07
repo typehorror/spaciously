@@ -1,9 +1,11 @@
+import { type NewHabitat } from "../habitat/types"
 import { type NewProduction } from "../production/types"
 import type {
   AllResourceNames,
   GeneratedResourceName,
   ResourceName,
 } from "../resources/types"
+import type { NewWarehouse } from "../warehouse/types"
 
 export enum ProductName {
   AMMO = "Ammo",
@@ -38,18 +40,6 @@ export type MaintenanceCost = {
   multiplier: Partial<MultiplierRecord>
 }
 
-// Type for habitat details
-export type Habitat = {
-  population: number
-  capacity: number
-}
-
-// Type for warehouse (item storage)
-export type Warehouse = {
-  content: Partial<Record<ResourceName | ProductName, number>>
-  capacity: number
-}
-
 export type ProductionModifier = Pick<NewProduction, "name"> &
   Partial<Omit<NewProduction, "name">>
 
@@ -59,6 +49,12 @@ export type ExpansionModifier = {
     capacity: number
   }
   production?: ProductionModifier[]
+  energy?: Partial<BuildingEnergy>
+}
+
+export type BuildingEnergy = {
+  consumption: number // energy used in Wh
+  production: number // energy produced in Wh
 }
 
 // Type for expansions
@@ -80,9 +76,10 @@ export type NewBuilding = {
     discoveries?: string[]
     buildings?: NewBuilding[]
   }
+  energy: BuildingEnergy
   maintenance: MaintenanceCost[]
-  habitat: Habitat
-  warehouse: Warehouse
+  habitat: NewHabitat
+  warehouse: NewWarehouse
   production: NewProduction[]
   expansion: Expansion[]
 }

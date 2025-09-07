@@ -4,59 +4,48 @@ import { buildingSlice } from "../building/buildingSlice"
 import { type CellRef, resolveCellId } from "../cell/utils"
 import { generateProductionKey } from "./utils"
 import { type RootState } from "@/app/store"
-import { createSelector } from "@reduxjs/toolkit"
+import { createEntityAdapter } from "@reduxjs/toolkit"
 
-export type ProductionIndex = Record<string, Production | undefined>
-type ProductionSlice = {
-  productionCellIndex: Record<string, Production[] | undefined>
-  productionIndex: ProductionIndex
-}
-
-const initialState: ProductionSlice = {
-  productionCellIndex: {},
-  productionIndex: {},
-}
+const productionAdapter = createEntityAdapter({
+  selectId: (production: Production) => production.id,
+  sortComparer: (a, b) => a.id.localeCompare(b.id),
+})
 
 export const productionSlice = createAppSlice({
   name: "production",
-  initialState,
+  initialState: productionAdapter.getInitialState(),
   reducers: {},
   selectors: {
     getProductionUnitsByCellId: (state, cellRef: CellRef): Production[] => {
       const { cellId } = resolveCellId(cellRef)
-      return state.productionCellIndex[cellId] ?? []
+      return productionAdapter
+        .getSelectors()
+        .selectAll(state)
+        .filter(p => p.cellId === cellId)
     },
-    getProductionIndex: state => state.productionIndex,
+    getProductionIndex: state =>
+      productionAdapter.getSelectors().selectEntities(state),
   },
   extraReducers: builder => {
     builder.addCase(buildingSlice.actions.addBuilding, (state, action) => {
       const { building, cellId } = resolveCellId(action.payload)
+      const production: Production[] = []
       for (const newProduction of building.production) {
-        const production = {
+        production.push({
           ...newProduction,
           cellId,
           id: generateProductionKey(cellId, newProduction.name),
-        }
-
-        state.productionIndex[production.id] = production
-
-        const cellProduction = [
-          ...(state.productionCellIndex[cellId] ?? []),
-          production,
-        ]
-        // always sort by name
-        cellProduction.sort((a, b) => a.name.localeCompare(b.name))
-
-        state.productionCellIndex[cellId] = cellProduction
+          lastProductionTime: new Date().getTime(),
+        })
       }
+      productionAdapter.addMany(state, production)
     })
   },
 })
 
-export const getProductions = createSelector(
-  (state: RootState) => state.production.productionIndex,
-  productionIndex => Object.values(productionIndex),
-)
-
 export const { getProductionUnitsByCellId, getProductionIndex } =
   productionSlice.selectors
+
+export const { selectAll: getProductions } = productionAdapter.getSelectors(
+  (state: RootState) => state.production,
+)

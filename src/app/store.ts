@@ -20,6 +20,7 @@ import { buildingSlice } from "@/features/building/buildingSlice"
 import { productionSlice } from "@/features/production/productionSlice"
 import { producerSlice } from "@/features/production/producerSlice"
 import { warehouseSlice } from "@/features/warehouse/warehouseSlice"
+import { habitatSlice } from "@/features/habitat/habitatSlice"
 
 const persistConfig = {
   key: "root",
@@ -40,6 +41,7 @@ const rootReducer = combineSlices(
   productionSlice,
   producerSlice,
   warehouseSlice,
+  habitatSlice,
 )
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

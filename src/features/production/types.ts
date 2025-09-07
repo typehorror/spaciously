@@ -6,14 +6,11 @@ export type NewProduction = {
   quantity: number
   period: number // the time it takes to produce the resource in ms
   cost?: Partial<Record<AllResourceNames, number>>
+  energyUsage: number // energy used per production cycle in Wh
 }
 
 export type Production = NewProduction & {
   cellId: string
-  id: string
-}
-
-export type ActiveProduction = {
   id: string
   lastProductionTime: number
 }

@@ -1,37 +1,35 @@
 import { createAppSlice } from "@/app/createAppSlice"
-import type { ActiveProduction, Production } from "./types"
-import { type CellRef, resolveCellId } from "../cell/utils"
-import { createSelector, type PayloadAction } from "@reduxjs/toolkit"
+import type { Production } from "./types"
+import { type CellRef, parseCellId, resolveCellId } from "../cell/utils"
+import { createEntityAdapter, type PayloadAction } from "@reduxjs/toolkit"
 import { generateProductionKey } from "./utils"
 import { gameSlice } from "../game/gameSlice"
-import { type RootState } from "@/app/store"
 import { type AllResourceNames } from "../resources/types"
 
-type ProducerSliceState = {
-  producers: Record<string, ActiveProduction>
-}
-
-const initialState: ProducerSliceState = {
-  producers: {},
-}
+export const producerAdapter = createEntityAdapter({
+  selectId: (production: Production) => production.id,
+  sortComparer: (a, b) => a.id.localeCompare(b.id),
+})
 
 export const producerSlice = createAppSlice({
   name: "producerState",
-  initialState,
+  initialState: producerAdapter.getInitialState(),
   reducers: {
-    toggleProduction: (state, action: PayloadAction<Production>) => {
-      const production = action.payload
+    toggleProduction: (
+      state,
+      action: PayloadAction<{ production: Production; activate: boolean }>,
+    ) => {
+      const { production, activate } = action.payload
       const key = generateProductionKey(production.cellId, production.name)
 
-      if (key in state.producers) {
-        // can't use Maps with redux toolkit
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete state.producers[key]
+      // we want to turn it off
+      if (!activate) {
+        producerAdapter.removeOne(state, key)
       } else {
-        state.producers[key] = {
-          id: production.id,
-          lastProductionTime: new Date().getTime(),
-        }
+        producerAdapter.upsertOne(state, {
+          ...production,
+          lastProductionTime: Date.now(),
+        })
       }
     },
     updateProduction: (
@@ -44,34 +42,56 @@ export const producerSlice = createAppSlice({
       }>,
     ) => {
       const { producerId } = action.payload
-      state.producers[producerId].lastProductionTime = new Date().getTime()
+      producerAdapter.updateOne(state, {
+        id: producerId,
+        changes: {
+          lastProductionTime: new Date().getTime(),
+        },
+      })
     },
   },
   selectors: {
     getProducer: (
       state,
       cellRef: CellRef & { name: string },
-    ): ActiveProduction | undefined => {
+    ): Production | undefined => {
       const { cellId, name } = resolveCellId(cellRef)
       const key = generateProductionKey(cellId, name)
-      return state.producers[key]
+      return producerAdapter.getSelectors().selectById(state, key)
     },
-    getProducerIndex: state => state.producers,
-    // getProducers: state => Object.values(state.producers),
+    getProducerIndex: state =>
+      producerAdapter.getSelectors().selectEntities(state),
+    getProducers: state => producerAdapter.getSelectors().selectAll(state),
+    getPlanetProducers: (state, planetId: number) =>
+      producerAdapter
+        .getSelectors()
+        .selectAll(state)
+        .filter(p => planetId === parseCellId(p.cellId).planetId),
+    getEnergyUsage: state =>
+      producerAdapter
+        .getSelectors()
+        .selectAll(state)
+        .reduce((acc, p) => acc + p.energyUsage, 0),
   },
   extraReducers: builder => {
     builder.addCase(gameSlice.actions.resumeGame, (state, action) => {
-      for (const producerId in state.producers) {
-        state.producers[producerId].lastProductionTime += action.payload.offset
+      const changes: { id: string; changes: Partial<Production> }[] = []
+
+      for (const producer of producerAdapter.getSelectors().selectAll(state)) {
+        changes.push({
+          id: producer.id,
+          changes: {
+            lastProductionTime:
+              producer.lastProductionTime + action.payload.offset,
+          },
+        })
       }
+
+      producerAdapter.updateMany(state, changes)
     })
   },
 })
 
-export const getProducers = createSelector(
-  (state: RootState) => state.producerState.producers,
-  producers => Object.values(producers),
-)
-
-export const { getProducer, getProducerIndex } = producerSlice.selectors
+export const { getProducer, getProducerIndex, getProducers } =
+  producerSlice.selectors
 export const { toggleProduction, updateProduction } = producerSlice.actions
