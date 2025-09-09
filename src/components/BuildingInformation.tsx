@@ -7,12 +7,15 @@ import { getWarehouse } from "@/features/warehouse/warehouseSlice"
 import { type Warehouse } from "@/features/warehouse/types"
 import { getStorageUnits } from "@/features/warehouse/utils"
 import { backgroundColor } from "@/features/resources/resources"
+import type { ResourceName } from "@/features/resources/types"
 import { range } from "lodash"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { getHabitat } from "@/features/habitat/habitatSlice"
+import ResearchPanel from "@/components/ResearchPanel"
 
 const renderQty = (qty?: number) => (qty ?? 0).toLocaleString()
 
@@ -39,20 +42,25 @@ export const BuildingInformation = ({ cell }: Props) => {
     getProductionUnitsByCellId(state, cell),
   )
   const warehouse = useAppSelector(state => getWarehouse(state, cell.id))
+  const habitat = useAppSelector(state => getHabitat(state, cell.id))
 
-  if (!building) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        <p>No building on this cell</p>
-      </div>
-    )
-  }
+  // BuildingInformation is only rendered for cells with a building, so
+  // we assume `building` is present here.
 
-  const renderPoints = (points: number, resource: string, index: number) => {
+  const renderPoints = (
+    points: number,
+    resource: ResourceName | string,
+    index: number,
+  ) => {
+    const colorClass =
+      resource in backgroundColor
+        ? backgroundColor[resource as ResourceName]
+        : "bg-gray-600"
+
     const filledPoints = range(0, points).map(i => (
       <div
         key={`${index.toString()}-point-${i.toString()}-${resource}`}
-        className={`${backgroundColor[resource] ?? "bg-gray-600"} w-1 h-1 rounded-[1px]`}
+        className={`${colorClass} w-1 h-1 rounded-[1px]`}
       ></div>
     ))
     const emptyPoints = range(filledPoints.length, 8).map(i => (
@@ -73,27 +81,33 @@ export const BuildingInformation = ({ cell }: Props) => {
     if (!warehouse) {
       return <span>Empty</span>
     }
-
     const units = getStorageUnits(warehouse)
-    // console.log(units)
-    return units.map((unit, index) => (
-      <Tooltip key={`unit-${unit.resource}-${index}`}>
-        <TooltipTrigger>
-          <div className={`inline-block border-gray-700 mr-1`}>
-            <div className="w-3 gap-0.5 grid grid-cols-2 p-px">
-              {renderPoints(unit.quantity, unit.resource, index)}
+
+    const nodes = units.map((unit, index) => {
+      const resKey = unit.resource ?? `empty-${index.toString()}`
+      const key = `unit-${resKey}-${index.toString()}`
+      const resourceName = unit.resource ?? ""
+      const qty = unit.resource ? (warehouse.content[unit.resource] ?? 0) : 0
+
+      return (
+        <Tooltip key={key}>
+          <TooltipTrigger>
+            <div className={`inline-block mr-1`}>
+              <div className="w-4 gap-0.5 grid grid-cols-2 p-0.5 hover:border-gray-500/70 border border-transparent rounded-xs">
+                {renderPoints(unit.quantity, resourceName, index)}
+              </div>
             </div>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>
-            {unit.resource
-              ? `${(warehouse.content[unit.resource] ?? "0").toString()} ${unit.resource}`
-              : "Empty"}
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    ))
+          </TooltipTrigger>
+          <TooltipContent className="pointer-events-none">
+            <p>
+              {unit.resource ? `${qty.toString()} ${unit.resource}` : "Empty"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      )
+    })
+
+    return nodes
   }
 
   return (
@@ -109,8 +123,8 @@ export const BuildingInformation = ({ cell }: Props) => {
       <div className="mb-4">
         <h4 className="font-medium mb-2">Habitation</h4>
         <div className="text-sm">
-          Population: {renderQty(building.habitat.population)} /{" "}
-          {renderQty(building.habitat.capacity)}
+          Population: {renderQty(habitat.population)} /{" "}
+          {renderQty(habitat.capacity)}
         </div>
       </div>
 
@@ -184,6 +198,8 @@ export const BuildingInformation = ({ cell }: Props) => {
           ))}
         </div>
       </div>
+
+      <ResearchPanel />
     </div>
   )
 }

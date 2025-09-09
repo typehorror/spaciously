@@ -33,7 +33,7 @@ export const warehouseSlice = createAppSlice({
       })
     })
 
-    builder.addCase(producerSlice.actions.updateProduction, (state, action) => {
+    builder.addCase(producerSlice.actions.produceResource, (state, action) => {
       const { cellId } = parseProductionKey(action.payload.producerId)
       const { resource, amount } = action.payload
       const warehouse = warehousesAdapter

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { getProducers, updateProduction } from "../production/producerSlice"
+import { getProducers, produceResource } from "../production/producerSlice"
 import { getProductionIndex } from "../production/productionSlice"
 import { type Production } from "../production/types"
 
@@ -48,7 +48,7 @@ export const GameLoop = () => {
         for (const p of production) {
           // console.log(`producing ${p.amount.toString()} of ${p.resource}`)
           dispatch(
-            updateProduction({
+            produceResource({
               producerId: p.id,
               lastProductionTime: p.lastProductionTime,
               amount: p.amount,

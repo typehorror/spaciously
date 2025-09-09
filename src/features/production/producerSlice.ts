@@ -32,7 +32,7 @@ export const producerSlice = createAppSlice({
         })
       }
     },
-    updateProduction: (
+    produceResource: (
       state,
       action: PayloadAction<{
         producerId: string
@@ -94,4 +94,4 @@ export const producerSlice = createAppSlice({
 
 export const { getProducer, getProducerIndex, getProducers } =
   producerSlice.selectors
-export const { toggleProduction, updateProduction } = producerSlice.actions
+export const { toggleProduction, produceResource } = producerSlice.actions

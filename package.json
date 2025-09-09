@@ -21,8 +21,10 @@
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@react-three/fiber": "^9.3.0",
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.1.12",
+    "@types/three": "^0.180.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
@@ -37,7 +39,8 @@
     "react-resizable-panels": "^3.0.5",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
