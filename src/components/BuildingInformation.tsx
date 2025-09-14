@@ -1,9 +1,9 @@
 import { useAppSelector } from "@/app/hooks"
-import { getBuildingById } from "@/features/building/buildingSlice"
+import { selectBuildingById } from "@/features/building/buildingSlice"
 import { type Cell } from "@/features/cell/types"
-import { getProductionUnitsByCellId } from "@/features/production/productionSlice"
+import { selectProductionUnitsByCellId } from "@/features/production/productionSlice"
 import { ProductionUnit } from "./ProductionUnit"
-import { getWarehouse } from "@/features/warehouse/warehouseSlice"
+import { selectWarehouseById } from "@/features/warehouse/warehouseSlice"
 import { type Warehouse } from "@/features/warehouse/types"
 import { getStorageUnits } from "@/features/warehouse/utils"
 import { backgroundColor } from "@/features/resources/resources"
@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { getHabitat } from "@/features/habitat/habitatSlice"
+import { selectHabitatById } from "@/features/habitat/habitatSlice"
 import ResearchPanel from "@/components/ResearchPanel"
 
 const renderQty = (qty?: number) => (qty ?? 0).toLocaleString()
@@ -37,12 +37,12 @@ type Props = {
 }
 
 export const BuildingInformation = ({ cell }: Props) => {
-  const building = useAppSelector(state => getBuildingById(state, cell.id))
+  const building = useAppSelector(state => selectBuildingById(state, cell.id))
   const productionUnits = useAppSelector(state =>
-    getProductionUnitsByCellId(state, cell),
+    selectProductionUnitsByCellId(state, cell),
   )
-  const warehouse = useAppSelector(state => getWarehouse(state, cell.id))
-  const habitat = useAppSelector(state => getHabitat(state, cell.id))
+  const warehouse = useAppSelector(state => selectWarehouseById(state, cell.id))
+  const habitat = useAppSelector(state => selectHabitatById(state, cell.id))
 
   // BuildingInformation is only rendered for cells with a building, so
   // we assume `building` is present here.

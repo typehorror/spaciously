@@ -1,4 +1,8 @@
-import { createEntityAdapter, type PayloadAction } from "@reduxjs/toolkit"
+import {
+  createDraftSafeSelector,
+  createEntityAdapter,
+  type PayloadAction,
+} from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
 import type { Building, NewBuilding } from "./types"
 import { type CellRef, parseCellId, resolveCellId } from "../cell/utils"
@@ -20,18 +24,25 @@ export const buildingSlice = createAppSlice({
       buildingAdapter.addOne(state, { ...building, cellId })
     },
   },
-  selectors: {
-    getBuildingByPlanetId: (state, planetId: number): Building[] => {
-      return buildingAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter(b => parseCellId(b.cellId).planetId === planetId)
-    },
-  },
 })
 
 export const { addBuilding } = buildingSlice.actions
-export const { getBuildingByPlanetId } = buildingSlice.selectors
 
-export const { selectAll: getBuildings, selectById: getBuildingById } =
-  buildingAdapter.getSelectors((state: RootState) => state.building)
+const buildingSelectors = buildingAdapter.getSelectors<RootState>(
+  s => s.building,
+)
+
+export const {
+  selectAll: selectAllBuildings,
+  selectById: selectBuildingById,
+  selectEntities: selectBuildingEntities,
+} = buildingSelectors
+
+export const selectBuildingsByPlanetId = createDraftSafeSelector(
+  [
+    (state: RootState) => selectAllBuildings(state),
+    (_, planetId: number) => planetId,
+  ],
+  (buildings, planetId) =>
+    buildings.filter(b => parseCellId(b.cellId).planetId === planetId),
+)

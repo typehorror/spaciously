@@ -9,7 +9,7 @@ import { ResourceName } from "../cell/types"
 import { useEffect, useRef, useState } from "react"
 import { addBuilding } from "../building/buildingSlice"
 import { getColonyLander } from "../building/buildings"
-import { getCurrentPlanetId } from "../planet/planetSlice"
+import { selectCurrentPlanetId } from "../planet/planetSlice"
 
 const FIRST_LANDING_RESOURCES: Record<ResourceName, number> = {
   [ResourceName.ORE]: 0,
@@ -22,7 +22,7 @@ const FIRST_LANDING_RESOURCES: Record<ResourceName, number> = {
 
 export const IdleScreen = () => {
   const playerName = useAppSelector(selectPlayerName)
-  const planetId = useAppSelector(getCurrentPlanetId)
+  const planetId = useAppSelector(selectCurrentPlanetId)
   const dispatch = useAppDispatch()
   const inputRef = useRef<HTMLInputElement>(null)
   const [name, setName] = useState(playerName)
@@ -35,7 +35,10 @@ export const IdleScreen = () => {
   const startNewGame = () => {
     const cells = cellGenerator(25, 20)
     const startCell = cells.find(cell => cell.q === 0 && cell.r === 0)
-    if (!startCell) return
+    if (!startCell) {
+      console.error("No starting cell found")
+      return
+    }
     startCell.resources = FIRST_LANDING_RESOURCES
     startCell.state = "claimed"
     dispatch(

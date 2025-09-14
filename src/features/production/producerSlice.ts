@@ -1,10 +1,15 @@
 import { createAppSlice } from "@/app/createAppSlice"
 import type { Production } from "./types"
-import { type CellRef, parseCellId, resolveCellId } from "../cell/utils"
-import { createEntityAdapter, type PayloadAction } from "@reduxjs/toolkit"
+import { parseCellId } from "../cell/utils"
+import {
+  createEntityAdapter,
+  type PayloadAction,
+  createDraftSafeSelector,
+} from "@reduxjs/toolkit"
 import { generateProductionKey } from "./utils"
 import { gameSlice } from "../game/gameSlice"
 import { type AllResourceNames } from "../resources/types"
+import { type RootState } from "@/app/store"
 
 export const producerAdapter = createEntityAdapter({
   selectId: (production: Production) => production.id,
@@ -12,7 +17,7 @@ export const producerAdapter = createEntityAdapter({
 })
 
 export const producerSlice = createAppSlice({
-  name: "producerState",
+  name: "producer",
   initialState: producerAdapter.getInitialState(),
   reducers: {
     toggleProduction: (
@@ -50,29 +55,6 @@ export const producerSlice = createAppSlice({
       })
     },
   },
-  selectors: {
-    getProducer: (
-      state,
-      cellRef: CellRef & { name: string },
-    ): Production | undefined => {
-      const { cellId, name } = resolveCellId(cellRef)
-      const key = generateProductionKey(cellId, name)
-      return producerAdapter.getSelectors().selectById(state, key)
-    },
-    getProducerIndex: state =>
-      producerAdapter.getSelectors().selectEntities(state),
-    getProducers: state => producerAdapter.getSelectors().selectAll(state),
-    getPlanetProducers: (state, planetId: number) =>
-      producerAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter(p => planetId === parseCellId(p.cellId).planetId),
-    getEnergyUsage: state =>
-      producerAdapter
-        .getSelectors()
-        .selectAll(state)
-        .reduce((acc, p) => acc + p.energyUsage, 0),
-  },
   extraReducers: builder => {
     builder.addCase(gameSlice.actions.resumeGame, (state, action) => {
       const changes: { id: string; changes: Partial<Production> }[] = []
@@ -92,6 +74,37 @@ export const producerSlice = createAppSlice({
   },
 })
 
-export const { getProducer, getProducerIndex, getProducers } =
-  producerSlice.selectors
 export const { toggleProduction, produceResource } = producerSlice.actions
+
+const producerSelectors = producerAdapter.getSelectors<RootState>(
+  s => s.producer,
+)
+
+export const {
+  selectAll: selectAllProducers,
+  selectById: selectProducerById,
+  selectEntities: selectProducerEntities,
+} = producerSelectors
+
+export const selectPlanetEnergyUsage = createDraftSafeSelector(
+  [
+    (state: RootState) => producerSelectors.selectAll(state),
+    (_, planetId: number) => planetId,
+  ],
+  (producers, planetId) =>
+    producers.reduce((acc, p) => {
+      if (planetId === parseCellId(p.cellId).planetId) {
+        return acc + p.energyUsage
+      }
+      return acc
+    }, 0),
+)
+
+export const selectPlanetProducers = createDraftSafeSelector(
+  [
+    (state: RootState) => producerSelectors.selectAll(state),
+    (_, planetId: number) => planetId,
+  ],
+  (producers, planetId) =>
+    producers.filter(p => planetId === parseCellId(p.cellId).planetId),
+)

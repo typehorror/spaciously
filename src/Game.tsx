@@ -7,16 +7,16 @@ import {
 } from "@/components/ui/resizable"
 import { useAppDispatch, useAppSelector } from "./app/hooks"
 import { pauseGame } from "./features/game/gameSlice"
-import { HexGridCanvas } from "./components/HexGridCanvas"
 import { CellInformation } from "./components/CellInformation"
 import { GameLoop } from "./features/game/GameLoop"
-import { getCellsByPlanetId } from "./features/cell/cellSlice"
-import { getCurrentPlanetId } from "./features/planet/planetSlice"
+import { selectCellsByPlanetId } from "./features/cell/cellSlice"
+import { selectCurrentPlanetId } from "./features/planet/planetSlice"
+import PlanetBoard from "./components/PlanetBoard"
 
 export function Game() {
-  const currentPlanetId = useAppSelector(getCurrentPlanetId)
+  const currentPlanetId = useAppSelector(selectCurrentPlanetId)
   const cells = useAppSelector(state =>
-    getCellsByPlanetId(state, currentPlanetId),
+    selectCellsByPlanetId(state, currentPlanetId),
   )
   const dispatch = useAppDispatch()
 
@@ -41,7 +41,7 @@ export function Game() {
           className="flex-1 border md:min-w-[450px]"
         >
           <ResizablePanel defaultSize={70}>
-            <HexGridCanvas cells={cells} />
+            <PlanetBoard cells={cells} />
           </ResizablePanel>
           <ResizableHandle />
           <ResizablePanel defaultSize={30}>

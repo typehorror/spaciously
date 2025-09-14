@@ -1,8 +1,8 @@
 import type React from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import {
-  getAvailableResearch,
-  getResearched,
+  selectAvailableResearches,
+  selectResearched,
   unlockResearch,
 } from "@/features/research/researchSlice"
 import {
@@ -13,8 +13,8 @@ import {
 
 export const ResearchPanel: React.FC = () => {
   const dispatch = useAppDispatch()
-  const available = useAppSelector(state => getAvailableResearch(state))
-  const researched = useAppSelector(state => getResearched(state))
+  const available = useAppSelector(state => selectAvailableResearches(state))
+  const researched = useAppSelector(state => selectResearched(state))
 
   return (
     <div className="mb-4">

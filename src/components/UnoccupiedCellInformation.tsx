@@ -4,14 +4,14 @@ import { hasClaimedNeighbor } from "@/features/map/utils"
 import { range } from "lodash"
 import { type Cell } from "@/features/cell/types"
 import { useAppSelector } from "@/app/hooks"
-import { getCellIndex } from "@/features/cell/cellSlice"
+import { selectCellEntities } from "@/features/cell/cellSlice"
 
 type Props = {
   cell: Cell
 }
 
 export const UnoccupiedCellInformation = ({ cell }: Props) => {
-  const cellIndex = useAppSelector(getCellIndex)
+  const cellIndex = useAppSelector(selectCellEntities)
 
   // This component is intended for unclaimed / unoccupied cells
   if (cell.state === "claimed") {

@@ -4,7 +4,7 @@ import { buildingSlice } from "../building/buildingSlice"
 import { type CellRef, resolveCellId } from "../cell/utils"
 import { generateProductionKey } from "./utils"
 import { type RootState } from "@/app/store"
-import { createEntityAdapter } from "@reduxjs/toolkit"
+import { createDraftSafeSelector, createEntityAdapter } from "@reduxjs/toolkit"
 
 const productionAdapter = createEntityAdapter({
   selectId: (production: Production) => production.id,
@@ -16,13 +16,6 @@ export const productionSlice = createAppSlice({
   initialState: productionAdapter.getInitialState(),
   reducers: {},
   selectors: {
-    getProductionUnitsByCellId: (state, cellRef: CellRef): Production[] => {
-      const { cellId } = resolveCellId(cellRef)
-      return productionAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter(p => p.cellId === cellId)
-    },
     getProductionIndex: state =>
       productionAdapter.getSelectors().selectEntities(state),
   },
@@ -43,9 +36,23 @@ export const productionSlice = createAppSlice({
   },
 })
 
-export const { getProductionUnitsByCellId, getProductionIndex } =
-  productionSlice.selectors
+const productionSelectors = productionAdapter.getSelectors<RootState>(
+  s => s.production,
+)
 
-export const { selectAll: getProductions } = productionAdapter.getSelectors(
-  (state: RootState) => state.production,
+export const {
+  selectAll: selectAllProductions,
+  selectById: selectProductionById,
+  selectEntities: selectProductionEntities,
+} = productionSelectors
+
+export const selectProductionUnitsByCellId = createDraftSafeSelector(
+  [
+    (state: RootState) => selectAllProductions(state),
+    (_: RootState, cellRef: CellRef) => cellRef,
+  ],
+  (productions, cellRef): Production[] => {
+    const { cellId } = resolveCellId(cellRef)
+    return productions.filter(p => p.cellId === cellId)
+  },
 )

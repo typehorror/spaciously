@@ -1,9 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { getCellByCoord } from "@/features/cell/cellSlice"
+import { selectCellByCoords } from "@/features/cell/cellSlice"
 import { getCellId } from "@/features/cell/utils"
 import {
-  getCurrentPlanetId,
-  getFocusedCellCoord,
+  selectCurrentPlanetId,
+  selectFocusedCellCoord,
   setFocusedCell,
 } from "@/features/planet/planetSlice"
 import { useRef, useEffect, useState } from "react"
@@ -59,10 +59,10 @@ export const HexGridCanvas: React.FC<HexGridCanvasProps> = ({ cells }) => {
     height: 400,
   })
   const [cursor, setCursor] = useState("default")
-  const currentPlanetId = useAppSelector(getCurrentPlanetId)
-  const focusedCellCoord = useAppSelector(getFocusedCellCoord)
+  const currentPlanetId = useAppSelector(selectCurrentPlanetId)
+  const focusedCellCoord = useAppSelector(selectFocusedCellCoord)
   const focusedCell = useAppSelector(state =>
-    getCellByCoord(state, currentPlanetId, focusedCellCoord),
+    selectCellByCoords(state, focusedCellCoord, currentPlanetId),
   )
   const dispatch = useAppDispatch()
 

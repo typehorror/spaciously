@@ -46,35 +46,43 @@ export const cellSlice = createAppSlice({
 })
 
 export const { addCells } = cellSlice.actions
-export const { getCellByCoord, getCellIndex } = cellSlice.selectors
+// export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
 export const { selectAll: getAllCells, selectById: getCellById } =
   cellAdapter.getSelectors((state: RootState) => state.cell)
 
-export const getCellsByPlanetId = createDraftSafeSelector(
+// export const getCellsByPlanetId = createDraftSafeSelector(
+//   [
+//     (state: RootState) => cellAdapter.getSelectors().selectAll(state.cell),
+//     (_: RootState, planetId: number) => planetId,
+//   ],
+//   (cells, planetId) => cells.filter(c => c.planetId === planetId),
+// )
+
+const cellSelectors = cellAdapter.getSelectors<RootState>(s => s.cell)
+
+export const {
+  selectAll: selectAllCells,
+  selectById: selectCellById,
+  selectEntities: selectCellEntities,
+} = cellSelectors
+
+export const selectCellsByPlanetId = createDraftSafeSelector(
   [
-    (state: RootState) => cellAdapter.getSelectors().selectAll(state.cell),
-    (_: RootState, planetId: number) => planetId,
+    (state: RootState) => selectAllCells(state),
+    (_, planetId: number) => planetId,
   ],
   (cells, planetId) => cells.filter(c => c.planetId === planetId),
 )
 
-type CellIdOrCoord = { cellId: string } | { coord: CellCoord; planetId: number }
-/**
- * Extracts the cell information from any Cell referencing payload,
- * regardless of whether it's provided by coordinate/planetId or cellId.
- *
- * @param payload The payload containing building and cell information.
- * @returns An object containing the extracted cellId and building.
- */
-export function resolveCellId<T extends CellIdOrCoord>(
-  input: T,
-): T & { cellId: string } {
-  if ("cellId" in input) {
-    return { ...input, cellId: input.cellId }
-  }
-  return {
-    ...input,
-    cellId: getCellId(input.coord, input.planetId),
-  }
-}
+export const selectCellByCoords = createDraftSafeSelector(
+  [
+    (state: RootState) => selectCellEntities(state),
+    (_, coords: CellCoord) => coords,
+    (_, _coords, planetId: number) => planetId,
+  ],
+  (cellIndex, coords, planetId) => {
+    const id = getCellId(coords, planetId)
+    return cellIndex[id]
+  },
+)

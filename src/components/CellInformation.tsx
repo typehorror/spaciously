@@ -1,18 +1,18 @@
 import { useAppSelector } from "@/app/hooks"
 import {
-  getCurrentPlanetId,
-  getFocusedCellCoord,
+  selectCurrentPlanetId,
+  selectFocusedCellCoord,
 } from "@/features/planet/planetSlice"
-import { getCellByCoord } from "@/features/cell/cellSlice"
+import { selectCellByCoords } from "@/features/cell/cellSlice"
 
 import UnoccupiedCellInformation from "./UnoccupiedCellInformation"
 import BuildingInformation from "./BuildingInformation"
 
 export const CellInformation = () => {
-  const currentPlanetId = useAppSelector(getCurrentPlanetId)
-  const focusedCellCoord = useAppSelector(getFocusedCellCoord)
+  const currentPlanetId = useAppSelector(selectCurrentPlanetId)
+  const focusedCellCoord = useAppSelector(selectFocusedCellCoord)
   const focusedCell = useAppSelector(state =>
-    getCellByCoord(state, currentPlanetId, focusedCellCoord),
+    selectCellByCoords(state, focusedCellCoord, currentPlanetId),
   )
 
   if (!focusedCell) {

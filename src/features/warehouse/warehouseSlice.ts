@@ -18,10 +18,6 @@ export const warehouseSlice = createAppSlice({
   name: "warehouse",
   initialState: warehousesAdapter.getInitialState(),
   reducers: {},
-  selectors: {
-    getWarehouse: (state, cellId: string) =>
-      warehousesAdapter.getSelectors().selectById(state, cellId),
-  },
   extraReducers: builder => {
     builder.addCase(buildingSlice.actions.addBuilding, (state, action) => {
       const { building, cellId } = resolveCellId(action.payload)
@@ -47,7 +43,7 @@ export const warehouseSlice = createAppSlice({
         [
           GeneratedResourceName.ENERGY,
           GeneratedResourceName.POPULATION,
-        ].includes(resource)
+        ].includes(resource as unknown as GeneratedResourceName)
       ) {
         return // can't store energy
       }
@@ -73,16 +69,18 @@ export const warehouseSlice = createAppSlice({
   },
 })
 
-export const { getWarehouse } = warehouseSlice.selectors
-
-export const { selectAll: getWarehouses } = warehousesAdapter.getSelectors(
-  (state: RootState) => state.warehouse,
+const warehouseSelectors = warehousesAdapter.getSelectors<RootState>(
+  s => s.warehouse,
 )
 
-export const getPlanetWarehousesContent = createDraftSafeSelector(
+export const {
+  selectAll: selectAllWarehouses,
+  selectById: selectWarehouseById,
+} = warehouseSelectors
+
+export const selectPlanetWarehousesContent = createDraftSafeSelector(
   [
-    (state: RootState) =>
-      warehousesAdapter.getSelectors().selectAll(state.warehouse),
+    (state: RootState) => warehouseSelectors.selectAll(state),
     (_, planetId: number) => planetId,
   ],
   (warehouses, planetId): WarehouseContent => {

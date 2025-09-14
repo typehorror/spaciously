@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { getProducers, produceResource } from "../production/producerSlice"
-import { getProductionIndex } from "../production/productionSlice"
+import {
+  selectAllProducers,
+  produceResource,
+} from "../production/producerSlice"
+import { selectProductionEntities } from "../production/productionSlice"
 import { type Production } from "../production/types"
 
 const TICK_RATE = 100 // 100ms per tick (10 ticks/sec)
@@ -9,8 +12,8 @@ const TICK_RATE = 100 // 100ms per tick (10 ticks/sec)
 export const GameLoop = () => {
   const dispatch = useAppDispatch()
   const lastTick = useRef(new Date().getTime())
-  const producers = useAppSelector(getProducers)
-  const productionIndex = useAppSelector(getProductionIndex)
+  const producers = useAppSelector(selectAllProducers)
+  const productionIndex = useAppSelector(selectProductionEntities)
 
   const computeProduction = (producers: Production[]) => {
     const results = []

@@ -18,7 +18,7 @@ export const habitatSlice = createAppSlice({
   initialState: habitatsAdapter.getInitialState(),
   reducers: {},
   selectors: {
-    getHabitat: (state, cellId: string) =>
+    selectHabitatById: (state, cellId: string) =>
       habitatsAdapter.getSelectors().selectById(state, cellId),
   },
   extraReducers: builder => {
@@ -58,16 +58,14 @@ export const habitatSlice = createAppSlice({
   },
 })
 
-export const { getHabitat } = habitatSlice.selectors
+const habitatSelectors = habitatsAdapter.getSelectors<RootState>(s => s.habitat)
 
-export const { selectAll: getHabitats } = habitatsAdapter.getSelectors(
-  (state: RootState) => state.habitat,
-)
+export const { selectAll: selectAllHabitats, selectById: selectHabitatById } =
+  habitatSelectors
 
-export const getPlanetPopulation = createDraftSafeSelector(
+export const selectPlanetPopulation = createDraftSafeSelector(
   [
-    (state: RootState) =>
-      habitatsAdapter.getSelectors().selectAll(state.habitat),
+    (state: RootState) => habitatSelectors.selectAll(state),
     (_, planetId: number) => planetId,
   ],
   (habitats, planetId): number => {

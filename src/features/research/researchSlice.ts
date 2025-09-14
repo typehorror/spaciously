@@ -1,7 +1,12 @@
 import { createAppSlice } from "@/app/createAppSlice"
-import { createEntityAdapter, type PayloadAction } from "@reduxjs/toolkit"
+import {
+  createDraftSafeSelector,
+  createEntityAdapter,
+  type PayloadAction,
+} from "@reduxjs/toolkit"
 import type { Research } from "./types"
 import { researchTree } from "./researchTree"
+import { type RootState } from "@/app/store"
 
 export const researchAdapter = createEntityAdapter<Research>({
   // default selectId uses the `id` field so we don't need to provide it here
@@ -40,47 +45,40 @@ export const researchSlice = createAppSlice({
       researchAdapter.setAll(state, researchTree)
     },
   },
-
-  // selectors operate on the slice state
-  selectors: {
-    getResearch: (state, id: string) =>
-      researchAdapter.getSelectors().selectById(state, id),
-
-    getAllResearch: state => researchAdapter.getSelectors().selectAll(state),
-
-    // researches whose prerequisites are all researched and which are not yet researched
-    getAvailableResearch: state => {
-      const all = researchAdapter.getSelectors().selectAll(state)
-      const researchedIds = new Set(
-        all.filter(r => r.researched).map(r => r.id),
-      )
-      return all.filter(
-        r =>
-          !r.researched && r.prerequisites.every(pid => researchedIds.has(pid)),
-      )
-    },
-
-    getResearched: state =>
-      researchAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter(r => r.researched),
-
-    getLocked: state =>
-      researchAdapter
-        .getSelectors()
-        .selectAll(state)
-        .filter(r => !r.researched),
-  },
 })
-
-export const {
-  getResearch,
-  getAllResearch,
-  getAvailableResearch,
-  getResearched,
-  getLocked,
-} = researchSlice.selectors
 
 export const { setResearched, unlockResearch, resetResearchTree } =
   researchSlice.actions
+
+const researchSelectors = researchAdapter.getSelectors<RootState>(
+  s => s.research,
+)
+
+export const {
+  selectAll: selectAllResearches,
+  selectById: selectResearchById,
+} = researchSelectors
+
+export const selectLocked = createDraftSafeSelector(
+  [(state: RootState) => researchSelectors.selectAll(state)],
+  (research): Research[] => research.filter(r => !r.researched),
+)
+
+export const selectResearched = createDraftSafeSelector(
+  [(state: RootState) => researchSelectors.selectAll(state)],
+  (research): Research[] => research.filter(r => r.researched),
+)
+
+export const selectAvailableResearches = createDraftSafeSelector(
+  [
+    (state: RootState) => researchSelectors.selectAll(state),
+    (state: RootState) => selectResearched(state),
+  ],
+  (all, researched): Research[] => {
+    const researchedIds = new Set(researched.map(r => r.id))
+    return all.filter(
+      r =>
+        !r.researched && r.prerequisites.every(pid => researchedIds.has(pid)),
+    )
+  },
+)

@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks"
-import { getEnergyInfo } from "@/features/energy/selectors"
-import { getPlanetPopulation } from "@/features/habitat/habitatSlice"
-import { getPlanetWarehousesContent } from "@/features/warehouse/warehouseSlice"
+import { selectEnergyInfo } from "@/features/energy/selectors"
+import { selectPlanetPopulation } from "@/features/habitat/habitatSlice"
+import { selectPlanetWarehousesContent } from "@/features/warehouse/warehouseSlice"
 import {
   AtomIcon,
   FlameIcon,
@@ -19,14 +19,14 @@ type Props = {
 
 export const ResourceBar = ({ planetId }: Props) => {
   const content = useAppSelector(state =>
-    getPlanetWarehousesContent(state, planetId),
+    selectPlanetWarehousesContent(state, planetId),
   )
 
   const population = useAppSelector(state =>
-    getPlanetPopulation(state, planetId),
+    selectPlanetPopulation(state, planetId),
   )
 
-  const energy = useAppSelector(state => getEnergyInfo(state, planetId))
+  const energy = useAppSelector(state => selectEnergyInfo(state, planetId))
 
   const getEnergyUnit = (
     value: number,

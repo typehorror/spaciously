@@ -1,15 +1,13 @@
 import { type RootState } from "@/app/store"
-import { producerAdapter } from "../production/producerSlice"
+import { selectAllProducers } from "../production/producerSlice"
 import { createDraftSafeSelector } from "@reduxjs/toolkit"
 import { parseCellId } from "../cell/utils"
-import { buildingAdapter } from "../building/buildingSlice"
+import { selectAllBuildings } from "../building/buildingSlice"
 
-export const getEnergyInfo = createDraftSafeSelector(
+export const selectEnergyInfo = createDraftSafeSelector(
   [
-    (state: RootState) =>
-      producerAdapter.getSelectors().selectAll(state.producerState),
-    (state: RootState) =>
-      buildingAdapter.getSelectors().selectAll(state.building),
+    (state: RootState) => selectAllProducers(state),
+    (state: RootState) => selectAllBuildings(state),
     (_, planetId: number) => planetId,
   ],
   (producers, buildings, planetId) => {

@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import {
-  getProducer,
+  selectProducerById,
   toggleProduction,
 } from "@/features/production/producerSlice"
 import { type Production } from "@/features/production/types"
@@ -15,7 +15,9 @@ type Props = {
 export const ProductionUnit = ({ production }: Props) => {
   const dispatch = useAppDispatch()
 
-  const producer = useAppSelector(state => getProducer(state, production))
+  const producer = useAppSelector(state =>
+    selectProducerById(state, production.id),
+  )
   const isActive = !!producer
 
   const onToggleProduction = () => {
