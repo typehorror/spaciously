@@ -52,7 +52,7 @@ export const getColonyLander = (): NewBuilding => {
         name: "Gas Production",
         resource: ResourceName.GAS,
         quantity: 1,
-        period: 3000,
+        period: 30000,
         cost: {},
         energyUsage: 1000, // 1kWh per production cycle
       },
@@ -68,7 +68,7 @@ export const getColonyLander = (): NewBuilding => {
         name: "Ore Production",
         resource: ResourceName.ORE,
         quantity: 1,
-        period: 2000, // 20 seconds
+        period: 20000, // 20 seconds
         cost: {},
         energyUsage: 1000, // 1kWh per production cycle
       },

@@ -84,7 +84,6 @@ export const selectPlanetWarehousesContent = createDraftSafeSelector(
     (_, planetId: number) => planetId,
   ],
   (warehouses, planetId): WarehouseContent => {
-    console.log("Calculating warehouse content for planet", planetId)
     return warehouses
       .filter(w => parseCellId(w.cellId).planetId === planetId)
       .reduce((acc: WarehouseContent, w) => {

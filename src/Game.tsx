@@ -12,6 +12,7 @@ import { GameLoop } from "./features/game/GameLoop"
 import { selectCellsByPlanetId } from "./features/cell/cellSlice"
 import { selectCurrentPlanetId } from "./features/planet/planetSlice"
 import PlanetBoard from "./components/PlanetBoard"
+import { ResearchButton } from "./components/ResearchButton"
 
 export function Game() {
   const currentPlanetId = useAppSelector(selectCurrentPlanetId)
@@ -33,6 +34,7 @@ export function Game() {
             >
               Pause Game
             </Button>
+            <ResearchButton />
           </div>
           <ResourceBar planetId={currentPlanetId} />
         </div>

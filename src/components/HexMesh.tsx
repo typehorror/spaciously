@@ -1,23 +1,39 @@
 import { useMemo } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import {
+  selectCurrentPlanetId,
   selectFocusedCellCoord,
   setFocusedCell,
 } from "@/features/planet/planetSlice"
 import * as THREE from "three"
+import {
+  selectCellById,
+  selectHasClaimedNeighbor,
+} from "@/features/cell/cellSlice"
+import { getCellId } from "@/features/cell/utils"
 
 export const HEX_RADIUS = 1
 
 type HexMeshProps = {
   position: [number, number, number]
-  color: string
   q: number
   r: number
 }
 
-export const HexMesh: React.FC<HexMeshProps> = ({ position, color, q, r }) => {
+export const HexMesh: React.FC<HexMeshProps> = ({ position, q, r }) => {
   const dispatch = useAppDispatch()
   const selectedHex = useAppSelector(selectFocusedCellCoord)
+  const planetId = useAppSelector(selectCurrentPlanetId)
+  const cellId = getCellId({ q, r }, planetId)
+
+  const cell = useAppSelector(state => selectCellById(state, cellId))
+  const isClaimed = cell.state === "claimed"
+  const hasClaimedNeighbor = useAppSelector(state =>
+    selectHasClaimedNeighbor(state, cellId),
+  )
+
+  const isRevealed = isClaimed || hasClaimedNeighbor
+
   const isSelected = selectedHex.q === q && selectedHex.r === r
 
   // Memoize geometry since it's identical for all hexes with same radius
@@ -36,30 +52,56 @@ export const HexMesh: React.FC<HexMeshProps> = ({ position, color, q, r }) => {
     }
     // Small deterministic extrusion for slight 3D feel
     const extrudeSettings = {
-      depth: 0.2,
+      depth: isClaimed ? 0.2 : 0,
       bevelEnabled: false,
     }
     return new THREE.ExtrudeGeometry(shape, extrudeSettings)
-  }, [])
+  }, [isClaimed])
 
   const material = useMemo(() => {
     return new THREE.MeshLambertMaterial({
-      color: isSelected ? "yellow" : color,
-      transparent: !isSelected,
-      opacity: 0.4,
+      color: isSelected ? "yellow" : isClaimed ? "#0ea5e9" : "#0c4a6e",
+      // keep mesh slightly translucent when not selected so edges remain visible
+      transparent: !isRevealed,
+      opacity: isSelected ? 1 : 0,
+      // remove wireframe; we'll render explicit edges when unrevealed
+      wireframe: false,
+      side: THREE.DoubleSide,
     })
-  }, [color, isSelected])
+  }, [isSelected, isRevealed, isClaimed])
+
+  // Precompute edges geometry for unrevealed tiles to render a clean border
+  const edgesGeometry = useMemo(() => {
+    if (isRevealed) return null
+    return new THREE.EdgesGeometry(geometry)
+  }, [geometry, isRevealed])
 
   return (
-    <mesh
-      position={position}
-      rotation={[-Math.PI / 2, 0, 0]}
-      geometry={geometry}
-      material={material}
-      onClick={() => {
-        dispatch(setFocusedCell({ q, r }))
-        console.log(`Selected: q=${q.toString()}, r=${r.toString()}`)
-      }}
-    />
+    <>
+      <mesh
+        position={position}
+        rotation={[-Math.PI / 2, 0, 0]}
+        geometry={geometry}
+        material={material}
+        onClick={() => {
+          dispatch(setFocusedCell({ q, r }))
+        }}
+      />
+      {!isRevealed && edgesGeometry && (
+        <lineSegments
+          position={position}
+          rotation={[-Math.PI / 2, 0, 0]}
+          geometry={edgesGeometry}
+          // Slightly render above the surface to reduce z-fighting
+          renderOrder={1}
+        >
+          <lineBasicMaterial
+            attach="material"
+            color={isSelected ? "yellow" : "#0c4a6e"}
+            linewidth={2}
+          />
+        </lineSegments>
+      )}
+    </>
   )
 }

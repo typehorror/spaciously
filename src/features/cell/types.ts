@@ -21,3 +21,10 @@ export enum ResourceName {
   PLASMA = "Plasma",
   ISOTOPES = "Isotopes",
 }
+
+export type PlanelBoundaries = {
+  qMin: number
+  qMax: number
+  rMin: number
+  rMax: number
+}

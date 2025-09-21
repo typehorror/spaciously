@@ -1,18 +1,18 @@
 import { resourceColor } from "@/features/resources/resources"
 import { ResourceName } from "@/features/resources/types"
-import { hasClaimedNeighbor } from "@/features/map/utils"
 import { range } from "lodash"
 import { type Cell } from "@/features/cell/types"
 import { useAppSelector } from "@/app/hooks"
-import { selectCellEntities } from "@/features/cell/cellSlice"
+import { selectHasClaimedNeighbor } from "@/features/cell/cellSlice"
 
 type Props = {
   cell: Cell
 }
 
 export const UnoccupiedCellInformation = ({ cell }: Props) => {
-  const cellIndex = useAppSelector(selectCellEntities)
-
+  const isDiscovered = useAppSelector(state =>
+    selectHasClaimedNeighbor(state, cell.id),
+  )
   // This component is intended for unclaimed / unoccupied cells
   if (cell.state === "claimed") {
     return (
@@ -21,8 +21,6 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
       </div>
     )
   }
-
-  const isDiscovered = hasClaimedNeighbor(cell.id, cellIndex)
 
   function renderResourceBar(blocks: number, resource: ResourceName) {
     return (

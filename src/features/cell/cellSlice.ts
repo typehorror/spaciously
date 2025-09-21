@@ -4,8 +4,8 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
-import type { Cell, CellCoord, NewCell } from "./types"
-import { getCellId } from "./utils"
+import type { Cell, CellCoord, NewCell, PlanelBoundaries } from "./types"
+import { getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
 
 const cellAdapter = createEntityAdapter({
@@ -51,14 +51,6 @@ export const { addCells } = cellSlice.actions
 export const { selectAll: getAllCells, selectById: getCellById } =
   cellAdapter.getSelectors((state: RootState) => state.cell)
 
-// export const getCellsByPlanetId = createDraftSafeSelector(
-//   [
-//     (state: RootState) => cellAdapter.getSelectors().selectAll(state.cell),
-//     (_: RootState, planetId: number) => planetId,
-//   ],
-//   (cells, planetId) => cells.filter(c => c.planetId === planetId),
-// )
-
 const cellSelectors = cellAdapter.getSelectors<RootState>(s => s.cell)
 
 export const {
@@ -84,5 +76,68 @@ export const selectCellByCoords = createDraftSafeSelector(
   (cellIndex, coords, planetId) => {
     const id = getCellId(coords, planetId)
     return cellIndex[id]
+  },
+)
+
+export const selectPlanetBoundaries = createDraftSafeSelector(
+  [
+    (state: RootState) => selectAllCells(state),
+    (_, planetId: number) => planetId,
+  ],
+  (cells, planetId): PlanelBoundaries => {
+    const planetCells = cells.filter(c => c.planetId === planetId)
+    const qMin = Math.min(...planetCells.map(c => c.q))
+    const qMax = Math.max(...planetCells.map(c => c.q))
+    const rMin = Math.min(...planetCells.map(c => c.r))
+    const rMax = Math.max(...planetCells.map(c => c.r))
+    return { qMin, qMax, rMin, rMax }
+  },
+)
+
+export const selectNeighborCells = createDraftSafeSelector(
+  [
+    (state: RootState) => selectCellEntities(state),
+    (state: RootState, cellId: string) => {
+      const { planetId } = parseCellId(cellId)
+      return selectCellsByPlanetId(state, planetId)
+    },
+    (_, cellId: string) => cellId,
+  ],
+  (cellIndex, planetCells, cellId) => {
+    const { q, r, planetId } = parseCellId(cellId)
+
+    const wrapR = (qValue: number, r: number) => {
+      const rValues = planetCells.filter(c => c.q === qValue).map(c => c.r)
+      const rMin = Math.min(...rValues)
+      const rMax = Math.max(...rValues)
+      return r < rMin ? rMax : r > rMax ? rMin : r
+    }
+
+    const wrapQ = (rValue: number, q: number) => {
+      const qValues = planetCells.filter(c => c.r === rValue).map(c => c.q)
+      const qMin = Math.min(...qValues)
+      const qMax = Math.max(...qValues)
+      return q < qMin ? qMax : q > qMax ? qMin : q
+    }
+
+    const rawNeighbors = [
+      { q: wrapQ(r, q + 1), r },
+      { q: wrapQ(r, q - 1), r },
+      { q, r: wrapR(q, r + 1) },
+      { q, r: wrapR(q, r - 1) },
+      { q: wrapQ(r, q + 1), r: wrapR(wrapQ(r, q + 1), r - 1) },
+      { q: wrapQ(r, q - 1), r: wrapR(wrapQ(r, q - 1), r + 1) },
+    ]
+
+    return rawNeighbors
+      .map(n => getCellId(n, planetId))
+      .map(coord => cellIndex[coord])
+  },
+)
+
+export const selectHasClaimedNeighbor = createDraftSafeSelector(
+  [(state: RootState, cellId: string) => selectNeighborCells(state, cellId)],
+  neighbors => {
+    return neighbors.some(n => n.state === "claimed")
   },
 )

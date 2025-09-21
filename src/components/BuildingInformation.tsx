@@ -15,22 +15,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { selectHabitatById } from "@/features/habitat/habitatSlice"
-import ResearchPanel from "@/components/ResearchPanel"
 
 const renderQty = (qty?: number) => (qty ?? 0).toLocaleString()
-
-function renderCost(cost?: Record<string, number>) {
-  if (!cost || Object.keys(cost).length === 0) return <span>—</span>
-  return (
-    <div className="flex gap-2 flex-wrap">
-      {Object.entries(cost).map(([k, v]) => (
-        <div key={k} className="text-xs text-muted-foreground">
-          {k}: {v}
-        </div>
-      ))}
-    </div>
-  )
-}
 
 type Props = {
   cell: Cell
@@ -148,58 +134,6 @@ export const BuildingInformation = ({ cell }: Props) => {
           ))}
         </div>
       </div>
-
-      <div className="mb-4">
-        <h4 className="font-medium mb-2">Maintenance</h4>
-        <div className="space-y-2">
-          {building.maintenance.map((m, i) => (
-            <div
-              key={i}
-              className="flex justify-between items-center text-sm border-b border-gray-500/30 py-2"
-            >
-              <div>
-                <div className="font-medium">{m.resource}</div>
-                <div className="text-xs text-muted-foreground">
-                  Qty: {m.quantity} — every {m.period}s
-                </div>
-              </div>
-              <div className="text-right text-xs">
-                Multiplier: {JSON.stringify(m.multiplier)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <h4 className="font-medium mb-2">Expansions</h4>
-        <div className="space-y-3">
-          {building.expansion.map((e, i) => (
-            <div key={i} className="p-3 border rounded-md">
-              <div className="font-medium">
-                {e.name} (Lvl {e.level})
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {e.description}
-              </div>
-              <div className="mt-2 text-xs">Cost: {renderCost(e.cost)}</div>
-              {e.modifier.production && (
-                <div className="mt-2 text-xs">
-                  <div className="font-medium">Adds Production:</div>
-                  {e.modifier.production.map((p, j) => (
-                    <div key={j} className="text-xs text-muted-foreground">
-                      {p.resource}: {p.quantity}
-                      {p.period ? ` every ${p.period.toString()}s` : ""}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <ResearchPanel />
     </div>
   )
 }

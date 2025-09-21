@@ -33,7 +33,7 @@ export const IdleScreen = () => {
   }, [])
 
   const startNewGame = () => {
-    const cells = cellGenerator(25, 20)
+    const cells = cellGenerator(20)
     const startCell = cells.find(cell => cell.q === 0 && cell.r === 0)
     if (!startCell) {
       console.error("No starting cell found")

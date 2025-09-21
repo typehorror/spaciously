@@ -9,6 +9,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: [],
+    duration: 300000, // 5 minutes
   },
   {
     id: "habitation-basics",
@@ -17,6 +18,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: [],
+    duration: 300000, // 5 minutes
   },
   {
     id: "energy-generation",
@@ -25,6 +27,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: [],
+    duration: 300000, // 5 minutes
   },
 
   // Tier 2: Early Growth - Builds on foundations
@@ -35,6 +38,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["resource-extraction"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "life-support-systems",
@@ -44,6 +48,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["habitation-basics"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "efficient-grids",
@@ -52,6 +57,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["energy-generation"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "terrain-analysis",
@@ -60,6 +66,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["resource-extraction"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "population-incentives",
@@ -68,6 +75,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["habitation-basics"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "renewable-sources",
@@ -76,6 +84,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["energy-generation"],
+    duration: 300000, // 5 minutes
   },
 
   // Resource Unlocks - Phased introduction of new raw resources
@@ -86,6 +95,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["resource-extraction", "terrain-analysis"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "energy-expansion",
@@ -94,6 +104,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["efficient-grids", "renewable-sources"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "rare-material-prospecting",
@@ -102,6 +113,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["resource-diversification", "energy-expansion"],
+    duration: 300000, // 5 minutes
   },
 
   // Tier 3: Intermediate Expansion - More products and buildings
@@ -112,6 +124,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["basic-refining", "resource-diversification"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "machinery-assembly",
@@ -120,6 +133,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["alloy-forging"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "bio-engineering",
@@ -128,6 +142,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["life-support-systems"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "plasma-harnessing",
@@ -136,6 +151,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["energy-expansion"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "colonization-tech",
@@ -144,6 +160,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["terrain-analysis", "machinery-assembly"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "ai-integration",
@@ -152,6 +169,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["population-incentives", "machinery-assembly"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "ecology-mastery",
@@ -160,6 +178,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["renewable-sources", "bio-engineering"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "electronics-fabrication",
@@ -168,6 +187,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["resource-diversification", "basic-refining"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "fuel-cell-production",
@@ -176,6 +196,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["rare-material-prospecting", "efficient-grids"],
+    duration: 300000, // 5 minutes
   },
 
   // Tier 4: Advanced Optimization - Deeper products and upgrades
@@ -186,6 +207,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["alloy-forging", "electronics-fabrication"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "automated-drones",
@@ -194,6 +216,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["machinery-assembly", "ai-integration"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "population-singularity",
@@ -202,6 +225,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["bio-engineering"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "fusion-cores",
@@ -210,6 +234,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["plasma-harnessing", "fuel-cell-production"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "stellar-navigation",
@@ -218,6 +243,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["colonization-tech"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "self-replicating-factories",
@@ -226,6 +252,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["ai-integration", "automated-drones"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "quantum-circuits",
@@ -234,6 +261,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["electronics-fabrication", "energy-expansion"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "terraforming-agents",
@@ -242,6 +270,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["ecology-mastery"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "shield-matrices",
@@ -250,6 +279,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["plasma-harnessing", "nano-alloys"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "hyper-fuel",
@@ -258,6 +288,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["fuel-cell-production", "rare-material-prospecting"],
+    duration: 300000, // 5 minutes
   },
 
   // Tier 5: End-Game Dominance - Exotic artifacts and mega-structures
@@ -268,6 +299,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["quantum-circuits", "hyper-fuel"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "quantum-cores",
@@ -276,6 +308,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["exotic-matter-synthesis", "automated-drones"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "neural-interfaces",
@@ -284,6 +317,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["population-singularity", "quantum-circuits"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "void-engines",
@@ -292,6 +326,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["hyper-fuel", "shield-matrices"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "stellar-forges",
@@ -300,6 +335,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["nano-alloys", "terraforming-agents"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "ascension-modules",
@@ -308,6 +344,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["quantum-cores", "neural-interfaces"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "dyson-arrays",
@@ -316,6 +353,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["stellar-navigation", "fusion-cores"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "bio-synthetics",
@@ -324,6 +362,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["ecology-mastery", "bio-engineering"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "quantum-research",
@@ -332,6 +371,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["exotic-matter-synthesis", "quantum-cores"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "ascension-protocol",
@@ -340,6 +380,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["ascension-modules", "dyson-arrays", "quantum-research"],
+    duration: 300000, // 5 minutes
   },
 
   // Additional Branches for Depth - Military, Economy, Exploration
@@ -350,6 +391,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["ai-integration"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "advanced-weapons",
@@ -358,6 +400,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["defense-upgrades", "plasma-harnessing"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "fleet-construction",
@@ -366,6 +409,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["colonization-tech", "machinery-assembly"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "economic-optimization",
@@ -374,6 +418,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["basic-refining", "ecology-mastery"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "trade-networks",
@@ -382,6 +427,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["economic-optimization", "stellar-navigation"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "exploration-drones",
@@ -390,6 +436,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["terrain-analysis", "automated-drones"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "planetary-mapping",
@@ -398,6 +445,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["exploration-drones"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "interstellar-scanning",
@@ -406,6 +454,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["planetary-mapping", "stellar-navigation"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "bio-plastics",
@@ -414,6 +463,7 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["bio-engineering", "resource-diversification"],
+    duration: 300000, // 5 minutes
   },
   {
     id: "energy-conduits",
@@ -422,5 +472,6 @@ export const researchTree: Research[] = [
     cost: 0,
     researched: false,
     prerequisites: ["efficient-grids", "alloy-forging"],
+    duration: 300000, // 5 minutes
   },
 ]
