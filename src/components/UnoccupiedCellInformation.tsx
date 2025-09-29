@@ -1,20 +1,39 @@
 import { resourceColor } from "@/features/resources/resources"
 import { ResourceName } from "@/features/resources/types"
 import { range } from "lodash"
-import { type Cell } from "@/features/cell/types"
-import { useAppSelector } from "@/app/hooks"
+import { HexCellState, type Cell } from "@/features/cell/types"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { selectHasClaimedNeighbor } from "@/features/cell/cellSlice"
+import { Button } from "./ui/button"
+import {
+  addTerraformTask,
+  selectTerraformingTask,
+} from "@/features/task/taskSlice"
+import TaskProgress from "./ui/TaskProgress"
+import { TaskState } from "@/features/task/types"
 
-type Props = {
+interface Props {
   cell: Cell
 }
 
 export const UnoccupiedCellInformation = ({ cell }: Props) => {
+  const dispatch = useAppDispatch()
+  const terraformingTask = useAppSelector(state =>
+    selectTerraformingTask(state, cell.id),
+  )
+
   const isDiscovered = useAppSelector(state =>
     selectHasClaimedNeighbor(state, cell.id),
   )
+
+  const onDiscoverClick = () => {
+    dispatch(
+      addTerraformTask({ cellId: cell.id, state: TaskState.IN_PROGRESS }),
+    )
+  }
+
   // This component is intended for unclaimed / unoccupied cells
-  if (cell.state === "claimed") {
+  if (cell.state === HexCellState.DEVELOPED) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground">
         <p>This cell is already claimed.</p>
@@ -33,6 +52,30 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
         ))}
       </div>
     )
+  }
+
+  const renderTerraformButton = () => {
+    if (terraformingTask?.startedAt) {
+      return (
+        <TaskProgress
+          {...terraformingTask}
+          startedAt={terraformingTask.startedAt}
+          label="Terraforming in progress..."
+          duration={terraformingTask.recipe.buildTime * 1_000}
+        />
+      )
+    } else {
+      return (
+        <Button
+          size="default"
+          className="mt-2 block w-full"
+          variant="outline"
+          onClick={onDiscoverClick}
+        >
+          Terraform Area
+        </Button>
+      )
+    }
   }
 
   return (
@@ -73,6 +116,11 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
             </div>
           ))}
         </div>
+        {isDiscovered && (
+          <div className="flex items-center h-12">
+            {renderTerraformButton()}
+          </div>
+        )}
       </div>
     </div>
   )

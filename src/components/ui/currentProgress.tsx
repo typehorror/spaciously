@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-type CurrentProgressProps = {
+interface CurrentProgressProps {
   progress: number // Starting point (0 to 1.0)
   duration: number // Duration in milliseconds
 }

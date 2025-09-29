@@ -11,10 +11,11 @@ import {
   selectHasClaimedNeighbor,
 } from "@/features/cell/cellSlice"
 import { getCellId } from "@/features/cell/utils"
+import { HexCellState } from "@/features/cell/types"
 
 export const HEX_RADIUS = 1
 
-type HexMeshProps = {
+interface HexMeshProps {
   position: [number, number, number]
   q: number
   r: number
@@ -27,13 +28,12 @@ export const HexMesh: React.FC<HexMeshProps> = ({ position, q, r }) => {
   const cellId = getCellId({ q, r }, planetId)
 
   const cell = useAppSelector(state => selectCellById(state, cellId))
-  const isClaimed = cell.state === "claimed"
   const hasClaimedNeighbor = useAppSelector(state =>
     selectHasClaimedNeighbor(state, cellId),
   )
 
+  const isClaimed = cell?.state === HexCellState.DEVELOPED
   const isRevealed = isClaimed || hasClaimedNeighbor
-
   const isSelected = selectedHex.q === q && selectedHex.r === r
 
   // Memoize geometry since it's identical for all hexes with same radius

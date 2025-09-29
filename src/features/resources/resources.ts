@@ -18,7 +18,7 @@ export const resourceColor = {
   [ResourceName.ISOTOPES]: "border-yellow-500/60 bg-yellow-500/30",
 }
 
-export const backgroundColor = {
+export const resourceBackgroundColor = {
   [ResourceName.ORE]: "bg-orange-400",
   [ResourceName.GAS]: "bg-blue-400",
   [ResourceName.CRYSTALS]: "bg-purple-400",

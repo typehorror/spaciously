@@ -4,24 +4,54 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
-import type { Building, NewBuilding } from "./types"
 import { type CellRef, parseCellId, resolveCellId } from "../cell/utils"
 import { type RootState } from "@/app/store"
+import { type Building } from "../production/types"
 
-export const buildingAdapter = createEntityAdapter({
-  selectId: (building: Building) => building.cellId,
-  sortComparer: (a, b) => a.cellId.localeCompare(b.cellId),
-})
+export interface CreatedBuilding extends Building {
+  /**
+   * The unique identifier for the building instance.
+   */
+  id: string
 
-type AddBuildingPayload = CellRef & { building: NewBuilding }
+  /**
+   * The cell ID where the building is located.
+   */
+  cellId: string
+
+  /**
+   * The slot ID within the cell where the building is placed.
+   */
+  slotIndex: number
+}
+
+export const buildingAdapter = createEntityAdapter<CreatedBuilding>()
+
+type AddBuildingActionPayload = CellRef & {
+  building: Building
+  slotIndex: number
+}
 
 export const buildingSlice = createAppSlice({
   name: "building",
   initialState: buildingAdapter.getInitialState(),
   reducers: {
-    addBuilding: (state, action: PayloadAction<AddBuildingPayload>) => {
-      const { building, cellId } = resolveCellId(action.payload)
-      buildingAdapter.addOne(state, { ...building, cellId })
+    addBuilding: (state, action: PayloadAction<AddBuildingActionPayload>) => {
+      const { building, cellId, slotIndex } = resolveCellId(action.payload)
+
+      // check if building with same id already exists (spot is already taken)
+      const buildingId = `${cellId}:${slotIndex.toString()}`
+      if (buildingAdapter.getSelectors().selectById(state, buildingId)) {
+        console.warn(`Cannot build anything here, the spot is already taken`)
+        return
+      }
+
+      buildingAdapter.addOne(state, {
+        ...building,
+        cellId,
+        id: buildingId,
+        slotIndex,
+      })
     },
   },
 })
@@ -45,4 +75,12 @@ export const selectBuildingsByPlanetId = createDraftSafeSelector(
   ],
   (buildings, planetId) =>
     buildings.filter(b => parseCellId(b.cellId).planetId === planetId),
+)
+
+export const selectBuildingByCellId = createDraftSafeSelector(
+  [
+    (state: RootState) => selectAllBuildings(state),
+    (_, cellId: string) => cellId,
+  ],
+  (buildings, cellId) => buildings.filter(b => b.cellId === cellId),
 )

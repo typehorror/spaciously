@@ -54,6 +54,8 @@ const eslintConfig = config(
     rules: {
       "no-undef": [0],
       "@typescript-eslint/no-confusing-void-expression": "off",
+      "@typescript-eslint/consistent-type-definitions": "error",
+      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
       "@typescript-eslint/consistent-type-imports": [
         2,
         {

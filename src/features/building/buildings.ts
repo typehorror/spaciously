@@ -1,6 +1,7 @@
 import { ResourceName, GeneratedResourceName } from "../resources/types"
 import { type NewBuilding, ProductName } from "./types"
 
+// TODO: time to delete this one
 export const getColonyLander = (): NewBuilding => {
   const colonyLander: NewBuilding = {
     name: "colony lander",

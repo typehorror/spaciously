@@ -6,7 +6,8 @@ import {
 import { selectCellByCoords } from "@/features/cell/cellSlice"
 
 import UnoccupiedCellInformation from "./UnoccupiedCellInformation"
-import BuildingInformation from "./BuildingInformation"
+import DevelopedCellPanel from "./DevelopedCellPanel"
+import { HexCellState } from "@/features/cell/types"
 
 export const CellInformation = () => {
   const currentPlanetId = useAppSelector(selectCurrentPlanetId)
@@ -25,8 +26,8 @@ export const CellInformation = () => {
 
   // return <UnoccupiedCellInformation cell={focusedCell} />
 
-  if (focusedCell.state === "claimed") {
-    return <BuildingInformation cell={focusedCell} />
+  if (focusedCell.state === HexCellState.DEVELOPED) {
+    return <DevelopedCellPanel cell={focusedCell} />
   } else {
     return <UnoccupiedCellInformation cell={focusedCell} />
   }

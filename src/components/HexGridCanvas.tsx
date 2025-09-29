@@ -9,13 +9,13 @@ import {
 import { useRef, useEffect, useState } from "react"
 import { Stage, Layer, Line } from "react-konva"
 
-export type HexCell = {
+export interface HexCell {
   q: number // axial coordinate
   r: number // axial coordinate
   state: "claimed" | "unclaimed"
 }
 
-type HexGridCanvasProps = {
+interface HexGridCanvasProps {
   cells: HexCell[]
 }
 
@@ -234,8 +234,8 @@ export const HexGridCanvas: React.FC<HexGridCanvasProps> = ({ cells }) => {
             const margin = 4 / zoom
             const corners = polygonCorners(x, y, (HEX_SIZE - margin) * zoom)
             // Ensure the polygon is fully closed for dashed border
-            const closedCorners = [...corners, corners[0]]
-            const points = closedCorners.flatMap(corner => [corner.x, corner.y])
+            // corners = [...corners, corners[0]]
+            const points = corners.flatMap(corner => [corner.x, corner.y])
 
             let fill =
               cell.state === "claimed"

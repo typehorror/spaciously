@@ -4,9 +4,18 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
-import type { Cell, CellCoord, NewCell, PlanelBoundaries } from "./types"
+import {
+  HexCellState,
+  type WarehouseContent,
+  type Cell,
+  type CellCoord,
+  type NewCell,
+  type PlanetBoundaries,
+  type Habitat,
+} from "./types"
 import { getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
+import { TaskSlice } from "../task/taskSlice"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -30,6 +39,28 @@ export const cellSlice = createAppSlice({
       )
       cellAdapter.addMany(state, cells)
     },
+
+    terraformCell: (state, action: PayloadAction<{ cellId: string }>) => {
+      const { cellId } = action.payload
+      const cell = cellAdapter.getSelectors().selectById(state, cellId)
+
+      if (!cell) {
+        console.warn(`Cannot terraform cell ${cellId}, cell not found`)
+        return
+      }
+
+      if (cell.state === HexCellState.DEVELOPED) {
+        console.warn(`Cell ${cellId} is already developed`)
+        return
+      }
+
+      cellAdapter.updateOne(state, {
+        id: cellId,
+        changes: {
+          state: HexCellState.DEVELOPED,
+        },
+      })
+    },
   },
 
   selectors: {
@@ -43,9 +74,44 @@ export const cellSlice = createAppSlice({
     },
     getCellIndex: state => cellAdapter.getSelectors().selectEntities(state),
   },
+  extraReducers: builder => {
+    builder.addCase(TaskSlice.actions.completeTask, (state, action) => {
+      const { cellId, taskType } = action.payload
+      const cell = cellAdapter.getSelectors().selectById(state, cellId)
+
+      if (!cell) {
+        console.warn(`cell ${cellId} not found`)
+        return
+      }
+
+      if (taskType === "TERRAFORM") {
+        cellAdapter.updateOne(state, {
+          id: cellId,
+          changes: {
+            state: HexCellState.DEVELOPED,
+          },
+        })
+      } else if (taskType === "PRODUCTION") {
+        const { resource } = action.payload
+        const currentAmount = cell.warehouse.content[resource] ?? 0
+        cellAdapter.updateOne(state, {
+          id: cellId,
+          changes: {
+            warehouse: {
+              ...cell.warehouse,
+              content: {
+                ...cell.warehouse.content,
+                [resource]: currentAmount + 1,
+              },
+            },
+          },
+        })
+      }
+    })
+  },
 })
 
-export const { addCells } = cellSlice.actions
+export const { addCells, terraformCell } = cellSlice.actions
 // export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
 export const { selectAll: getAllCells, selectById: getCellById } =
@@ -84,7 +150,7 @@ export const selectPlanetBoundaries = createDraftSafeSelector(
     (state: RootState) => selectAllCells(state),
     (_, planetId: number) => planetId,
   ],
-  (cells, planetId): PlanelBoundaries => {
+  (cells, planetId): PlanetBoundaries => {
     const planetCells = cells.filter(c => c.planetId === planetId)
     const qMin = Math.min(...planetCells.map(c => c.q))
     const qMax = Math.max(...planetCells.map(c => c.q))
@@ -138,6 +204,48 @@ export const selectNeighborCells = createDraftSafeSelector(
 export const selectHasClaimedNeighbor = createDraftSafeSelector(
   [(state: RootState, cellId: string) => selectNeighborCells(state, cellId)],
   neighbors => {
-    return neighbors.some(n => n.state === "claimed")
+    return neighbors.some(n => n?.state === HexCellState.DEVELOPED)
+  },
+)
+
+export const selectPlanetWarehousesContent = createDraftSafeSelector(
+  [
+    (state: RootState) => selectAllCells(state),
+    (_, planetId: number) => planetId,
+  ],
+  (cells, planetId): WarehouseContent => {
+    return cells
+      .filter(c => c.planetId === planetId)
+      .reduce((acc: WarehouseContent, c: Cell) => {
+        for (const resourceName in c.warehouse.content) {
+          acc[resourceName] =
+            (acc[resourceName] ?? 0) + (c.warehouse.content[resourceName] ?? 0)
+        }
+        return acc
+      }, {})
+  },
+)
+
+export const selectCellWarehouseCapacity = createDraftSafeSelector(
+  [(state: RootState, cellId: string) => selectCellById(state, cellId)],
+  (cell): number => {
+    return cell ? cell.warehouse.capacity : 0
+  },
+)
+
+export const selectPlanetHabitation = createDraftSafeSelector(
+  [
+    (state: RootState, planetId: number) =>
+      selectCellsByPlanetId(state, planetId),
+  ],
+  (cells): Habitat => {
+    return cells.reduce(
+      (acc: Habitat, cell) => {
+        acc.population += cell.habitat.population
+        acc.capacity += cell.habitat.capacity
+        return acc
+      },
+      { population: 0, capacity: 0 },
+    )
   },
 )

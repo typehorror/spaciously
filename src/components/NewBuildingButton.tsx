@@ -6,31 +6,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Button } from "./ui/button"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import {
   selectAvailableResearches,
   unlockResearch,
 } from "@/features/research/researchSlice"
+import { PlusIcon } from "lucide-react"
 
-export const ResearchButton: React.FC = () => {
+export const NewBuildingButton: React.FC = () => {
   const available = useAppSelector(state => selectAvailableResearches(state))
   const dispatch = useAppDispatch()
 
   return (
     <Dialog>
-      <DialogTrigger>
-        {/* <Button variant="outline" size="sm"> */}
-        Research
-        {/* </Button> */}
+      <DialogTrigger className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md border-white/20 border hover:border-solid hover:border-white/40 border-dashed text-gray-500 hover:text-gray-200 hover:bg-white/5 transition">
+        <PlusIcon size={24} />
+        <span> Build</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Available Researches</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </DialogDescription>
+          <DialogTitle>Available Constructions</DialogTitle>
+          <DialogDescription></DialogDescription>
           <div className="space-y-3">
             <div>
               <div className="mt-2 grid gap-2">

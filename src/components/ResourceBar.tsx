@@ -1,7 +1,9 @@
 import { useAppSelector } from "@/app/hooks"
 import { selectEnergyInfo } from "@/features/energy/selectors"
-import { selectPlanetPopulation } from "@/features/habitat/habitatSlice"
-import { selectPlanetWarehousesContent } from "@/features/warehouse/warehouseSlice"
+import {
+  selectPlanetHabitation,
+  selectPlanetWarehousesContent,
+} from "@/features/cell/cellSlice"
 import {
   AtomIcon,
   FlameIcon,
@@ -13,7 +15,7 @@ import {
   ZapIcon,
 } from "lucide-react"
 
-type Props = {
+interface Props {
   planetId: number
 }
 
@@ -22,8 +24,8 @@ export const ResourceBar = ({ planetId }: Props) => {
     selectPlanetWarehousesContent(state, planetId),
   )
 
-  const population = useAppSelector(state =>
-    selectPlanetPopulation(state, planetId),
+  const habitat = useAppSelector(state =>
+    selectPlanetHabitation(state, planetId),
   )
 
   const energy = useAppSelector(state => selectEnergyInfo(state, planetId))
@@ -101,7 +103,9 @@ export const ResourceBar = ({ planetId }: Props) => {
           fill="currentColor"
           className="w-4 h-4 text-orange-300"
         />
-        <span className="tabular-nums">{population}</span>
+        <span className="tabular-nums">
+          {habitat.population}/{habitat.capacity}
+        </span>
       </div>
 
       <div className={itemClass} title="Energy">

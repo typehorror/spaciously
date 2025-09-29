@@ -1,20 +1,3 @@
-import { type AllResourceNames } from "../resources/types"
-
-export type NewProduction = {
-  name: string
-  resource: AllResourceNames
-  quantity: number
-  period: number // the time it takes to produce the resource in ms
-  cost?: Partial<Record<AllResourceNames, number>>
-  energyUsage: number // energy used per production cycle in Wh
-}
-
-export type Production = NewProduction & {
-  cellId: string
-  id: string
-  lastProductionTime: number
-}
-
 /*
  * Ideas for building types:
  * - Factory
@@ -57,6 +40,25 @@ export enum BuildingType {
   SHIPYARD = "Shipyard", // Yield: Ship production (for expansion; high-energy combos)
 }
 
+export interface ProductRecipe {
+  /**
+   * The input resources required to produce the product.
+   */
+  inputs: Array<{ product: string; quantity: number }>
+
+  /**
+   * The energy cost in Watt hours (Wh) to produce the product.
+   */
+  energy: number
+
+  /**
+   * The base time it takes to build the product in seconds.
+   * This time can be modified by various factors such as
+   * building level, discoveries, and other game mechanics.
+   */
+  buildTime: number
+}
+
 export interface Product {
   /**
    * The name of the product (e.g., "Ore", "Missile", etc.)
@@ -69,51 +71,9 @@ export interface Product {
   description: string
 
   /**
-   * The resource cost to build the product.
+   * The energy consumption in Watt hours (Wh) for producing the product.
    */
-  cost: Partial<Record<AllResourceNames, number>>
-
-  /**
-   * The base time it takes to build the product in game ticks.
-   * This time can be modified by various factors such as
-   * building level, discoveries, and other game mechanics.
-   */
-  ticksToBuild: number
-}
-
-/**
- * This is to be extended by building that have factory capabilities.
- */
-export interface ProducerBuilding {
-  /**
-   * The list of products that can be produced by the building.
-   */
-  products: Product[]
-
-  /**
-   * percentage modifier to production speed (e.g., 0.1 for +10% speed)
-   */
-  productionSpeedModifier: number
-}
-
-/**
- * A building placement represents a building placed on a specific cell (hex) on the planet.
- */
-export interface BuildingPlacement {
-  /**
-   * The ID of the cell (Hex) where the building is placed.
-   */
-  cellId: string
-
-  /**
-   * The slot ID where the building is placed (0-n a hex can have multiple slots).
-   */
-  slotId: number
-
-  /**
-   * The ID of the building placed in the cell.
-   */
-  buildingId: string
+  recipe: ProductRecipe
 }
 
 /**
@@ -121,11 +81,6 @@ export interface BuildingPlacement {
  * placed on a slot within a cell (hex) on a planet.
  */
 export interface Building extends Product {
-  /**
-   * The unique identifier for the building instance.
-   */
-  id: string
-
   /**
    * The type of the building for categorization and type-specific logic.
    */
@@ -149,11 +104,21 @@ export interface Building extends Product {
 
   /**
    * Buildings can take damage from various sources such as attacks,
-   * and wear and tear over time. The health attribute is expressed
-   * as a percentage (0 to 100). The cost of maintenance is 50% of the
+   * and wear and tear over time. The cost of maintenance is 50% of the
    * building cost unless another unit or discovery provides a modifier.
    */
   health: number
+
+  /**
+   * The maximum health of the building.
+   * When health reaches 0, the building is considered destroyed.
+   */
+  maxHealth: number
+
+  /**
+   * The shield damps incoming damage before it affects health.
+   */
+  shield: number
 
   /**
    * The energy consumption in Wh for the building when in use (isActive is true).
@@ -170,4 +135,14 @@ export interface Building extends Product {
    * added to the hex's total storage capacity.
    */
   storageCapacity: number
+
+  /**
+   * The list of products that can be produced by the building.
+   */
+  production: Product[]
+
+  /**
+   * percentage modifier to production speed (e.g., 0.1 for +10% speed)
+   */
+  productionSpeedModifier: number
 }

@@ -8,11 +8,11 @@ import {
 import { useAppDispatch, useAppSelector } from "./app/hooks"
 import { pauseGame } from "./features/game/gameSlice"
 import { CellInformation } from "./components/CellInformation"
-import { GameLoop } from "./features/game/GameLoop"
 import { selectCellsByPlanetId } from "./features/cell/cellSlice"
 import { selectCurrentPlanetId } from "./features/planet/planetSlice"
 import PlanetBoard from "./components/PlanetBoard"
 import { ResearchButton } from "./components/ResearchButton"
+import { TaskManager } from "./features/task/TaskManager"
 
 export function Game() {
   const currentPlanetId = useAppSelector(selectCurrentPlanetId)
@@ -23,7 +23,7 @@ export function Game() {
 
   return (
     <>
-      <GameLoop />
+      <TaskManager />
       <div className="flex h-full flex-col">
         <div className="shrink-0 py-2 px-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">

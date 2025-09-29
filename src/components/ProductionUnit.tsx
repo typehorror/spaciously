@@ -1,49 +1,56 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import {
-  selectProducerById,
-  toggleProduction,
-} from "@/features/production/producerSlice"
-import { type Production } from "@/features/production/types"
-import { PlayCircleIcon, StopCircleIcon } from "@heroicons/react/24/solid"
 import { Progress } from "./ui/progress"
-import CurrentProgress from "./ui/currentProgress"
+import {
+  addProductionTask,
+  removeTask,
+  selectProductionTask,
+} from "@/features/task/taskSlice"
+import { type Product } from "@/features/production/types"
+import TaskProgress from "./ui/TaskProgress"
 
-type Props = {
-  production: Production
+interface Props {
+  product: Product
+  cellId: string
+  buildingIds: string[]
 }
 
-export const ProductionUnit = ({ production }: Props) => {
+export const ProductionUnit = ({ product, cellId, buildingIds }: Props) => {
   const dispatch = useAppDispatch()
 
-  const producer = useAppSelector(state =>
-    selectProducerById(state, production.id),
+  const productionTask = useAppSelector(state =>
+    selectProductionTask(state, cellId, product.name),
   )
-  const isActive = !!producer
+
+  const isActive = !!productionTask
 
   const onToggleProduction = () => {
-    dispatch(toggleProduction({ production, activate: !isActive }))
+    if (productionTask) {
+      dispatch(removeTask({ id: productionTask.id }))
+    } else {
+      dispatch(
+        addProductionTask({
+          cellId,
+          resource: product.name,
+          buildingIds,
+          recipe: product.recipe,
+        }),
+      )
+    }
   }
-
-  // When the value stays the same between rendering (like 1.01% twice)
-  // the component won't refresh. This forces the value to have a higher
-  // precision (admittedly random) but under a millisecond.
-  const now = Date.now() + Math.random()
-  const value = now - (producer ? producer.lastProductionTime : 0) // progress in ms
-  const progress = (100 * value) / production.period // progress in %
 
   return (
     <button
       type="button"
       className="rounded-sm cursor-pointer bg-gradient-to-br hover:from-slate-800 hover:to-slate-900 group hover:border-gray-800 block w-full p-2  text-left border border-transparent"
       onClick={onToggleProduction}
-      aria-label={`Turn on ${production.name} production`}
+      aria-label={`Turn on ${product.name} production`}
     >
       <div className="flex-col flex w-full space-y-2">
         <div className="flex flex-row space-x-1 justify-between items-center">
           <div
             className={`flex-1 items-center ${isActive ? "text-green-500 font-bold" : "text-gray-500 group-hover:text-gray-400 font-medium"}`}
           >
-            {production.name}
+            {product.name}
           </div>
           <div className="text-xs italic">
             {isActive ? (
@@ -61,11 +68,12 @@ export const ProductionUnit = ({ production }: Props) => {
           </div>
         </div>
         <div>
-          {isActive ? (
+          {isActive && productionTask.startedAt ? (
             <div>
-              <CurrentProgress
-                progress={progress}
-                duration={production.period - value}
+              <TaskProgress
+                startedAt={productionTask.startedAt}
+                duration={productionTask.recipe.buildTime * 1000}
+                state={productionTask.state}
               />
             </div>
           ) : (
@@ -79,38 +87,5 @@ export const ProductionUnit = ({ production }: Props) => {
         </div>
       </div>
     </button>
-  )
-
-  return (
-    <div className="flex justify-between items-center text-sm border-b border-gray-500/30 py-2">
-      <div className="flex-col flex w-full space-y-2">
-        <div className="flex flex-row space-x-1">
-          <button
-            type="button"
-            className="shrink-0"
-            onClick={onToggleProduction}
-            aria-label={isActive ? "Turn off" : "Turn on"}
-          >
-            {isActive ? (
-              <PlayCircleIcon className="w-5 h-5 text-green-600" />
-            ) : (
-              <StopCircleIcon className="w-5 h-5 text-gray-400" />
-            )}
-          </button>
-          <div
-            className={`flex-1 items-center ${isActive ? "text-green-500 font-bold" : "text-gray-500 font-medium"}`}
-          >
-            {production.name}
-          </div>
-        </div>
-
-        <div>
-          <CurrentProgress
-            progress={progress}
-            duration={production.period - value}
-          />
-        </div>
-      </div>
-    </div>
   )
 }

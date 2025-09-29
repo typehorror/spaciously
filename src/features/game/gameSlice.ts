@@ -1,7 +1,7 @@
 import { type PayloadAction } from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
 
-type GameState = {
+interface GameState {
   status: "idle" | "playing" | "paused" | "stopped"
   startTime: number
   pauseTime: number

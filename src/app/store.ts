@@ -17,11 +17,8 @@ import { planetSlice } from "@/features/planet/planetSlice"
 import { cellSlice } from "@/features/cell/cellSlice"
 import { gameSlice } from "@/features/game/gameSlice"
 import { buildingSlice } from "@/features/building/buildingSlice"
-import { productionSlice } from "@/features/production/productionSlice"
-import { producerSlice } from "@/features/production/producerSlice"
-import { warehouseSlice } from "@/features/warehouse/warehouseSlice"
-import { habitatSlice } from "@/features/habitat/habitatSlice"
 import { researchSlice } from "@/features/research/researchSlice"
+import { TaskSlice } from "@/features/task/taskSlice"
 
 const persistConfig = {
   key: "root",
@@ -39,11 +36,12 @@ const rootReducer = combineSlices(
   cellSlice,
   gameSlice,
   buildingSlice,
-  productionSlice,
-  producerSlice,
-  warehouseSlice,
-  habitatSlice,
+  // productionSlice,
+  // producerSlice,
+  // warehouseSlice,
+  // habitatSlice,
   researchSlice,
+  TaskSlice,
 )
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

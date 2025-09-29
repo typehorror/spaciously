@@ -2,7 +2,7 @@ import type React from "react"
 import { HexMesh, HEX_RADIUS } from "./HexMesh"
 import { type Cell } from "@/features/cell/types"
 
-type HexGridProps = {
+interface HexGridProps {
   cells: Cell[]
 }
 

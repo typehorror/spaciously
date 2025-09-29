@@ -5,11 +5,14 @@ import { selectPlayerName, updatePlayerName } from "../player/PlayerSlice"
 import { startGame } from "./gameSlice"
 import { addCells } from "../cell/cellSlice"
 import { cellGenerator } from "../cell/cellGenerator"
-import { ResourceName } from "../cell/types"
+import { HexCellState, ResourceName } from "../cell/types"
 import { useEffect, useRef, useState } from "react"
 import { addBuilding } from "../building/buildingSlice"
-import { getColonyLander } from "../building/buildings"
 import { selectCurrentPlanetId } from "../planet/planetSlice"
+import {
+  BasicMiner,
+  GasExtractor,
+} from "../production/buildings/ResourceExtractorBuildings"
 
 const FIRST_LANDING_RESOURCES: Record<ResourceName, number> = {
   [ResourceName.ORE]: 0,
@@ -40,12 +43,21 @@ export const IdleScreen = () => {
       return
     }
     startCell.resources = FIRST_LANDING_RESOURCES
-    startCell.state = "claimed"
+    startCell.state = HexCellState.DEVELOPED
     dispatch(
       addBuilding({
-        building: getColonyLander(),
+        building: BasicMiner,
         planetId,
         coord: { q: 0, r: 0 },
+        slotIndex: 0,
+      }),
+    )
+    dispatch(
+      addBuilding({
+        building: GasExtractor,
+        planetId,
+        coord: { q: 0, r: 0 },
+        slotIndex: 3,
       }),
     )
     dispatch(updatePlayerName(name.trim()))

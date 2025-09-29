@@ -6,5 +6,10 @@ export const parseProductionKey = (
   key: string,
 ): { cellId: string; name: string } => {
   const [cellId, name] = key.split("/")
-  return { cellId, name }
+
+  if (cellId && name) {
+    return { cellId, name }
+  }
+
+  throw new Error(`Invalid production key: ${key}`)
 }

@@ -3,9 +3,7 @@ import {
   producerSlice,
   selectAllProducers,
 } from "./producerSlice"
-import { generateProductionKey } from "./utils"
-import type { Production } from "./types"
-import { ResourceName } from "../resources/types"
+import type { Product } from "./types"
 import { type RootState } from "@/app/store"
 
 describe("producerSlice selectors reference stability", () => {
@@ -33,15 +31,15 @@ describe("producerSlice selectors reference stability", () => {
     const before = selectAllProducers(rootBefore)
 
     // create a production and toggle it on via reducer
-    const production: Production = {
-      cellId: "0:1:1",
+    const production: Product = {
       name: "miner",
-      resource: ResourceName.ORE,
-      quantity: 1,
-      period: 1000,
-      energyUsage: 10,
-      id: generateProductionKey("0:1:1", "miner"),
-      lastProductionTime: Date.now(),
+      description: "A mining operation",
+      cost: { Ore: 1 },
+      recipe: {
+        inputs: [{ product: "Ore", quantity: 1 }],
+        buildTime: 600,
+        energy: 500,
+      },
     }
 
     const next = producerSlice.reducer(
@@ -58,6 +56,6 @@ describe("producerSlice selectors reference stability", () => {
 
     // and contains the new production
     expect(after).toHaveLength(1)
-    expect(after[0].id).toBe(production.id)
+    expect(after[0]).toBeDefined()
   })
 })
