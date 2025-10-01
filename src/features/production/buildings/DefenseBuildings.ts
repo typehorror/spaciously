@@ -83,6 +83,7 @@ export const BasicTurret: DefenseBuilding = {
   damageMultiplier: 1.0,
   production: [],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["ai-integration"],
 }
 
 export const AdvancedTurret: DefenseBuilding = {
@@ -115,6 +116,7 @@ export const AdvancedTurret: DefenseBuilding = {
   damageMultiplier: 1.5,
   production: [],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["defense-upgrades"],
 }
 
 export const ShieldGenerator: DefenseBuilding = {
@@ -147,6 +149,7 @@ export const ShieldGenerator: DefenseBuilding = {
   damageMultiplier: 0.8, // Shield generators focus on defense, not damage
   production: [],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["shield-matrices"],
 }
 
 export const PlasmaCannon: DefenseBuilding = {
@@ -181,6 +184,7 @@ export const PlasmaCannon: DefenseBuilding = {
   damageMultiplier: 3.0, // Very high damage
   production: [],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["advanced-weapons"],
 }
 
 export const NuclearSilo: DefenseBuilding = {
@@ -215,6 +219,7 @@ export const NuclearSilo: DefenseBuilding = {
   damageMultiplier: 10.0, // Massive area damage
   production: [],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["advanced-weapons", "rare-material-prospecting"],
 }
 
 export const defenseBuildings = [

@@ -15,7 +15,6 @@ import {
 } from "./types"
 import { getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
-import { TaskSlice } from "../task/taskSlice"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -38,6 +37,47 @@ export const cellSlice = createAppSlice({
         }),
       )
       cellAdapter.addMany(state, cells)
+    },
+
+    addToWarehouse: (
+      state,
+      action: PayloadAction<{
+        cellId: string
+        resource: string
+        quantity: number
+      }>,
+    ) => {
+      const { cellId, resource: resouce, quantity } = action.payload
+      const cell = cellAdapter.getSelectors().selectById(state, cellId)
+
+      if (!cell) {
+        console.warn(
+          `Cannot add to warehouse of cell ${cellId}, cell not found`,
+        )
+        return
+      }
+
+      const currentAmount = cell.warehouse.content[resouce] ?? 0
+      const newAmount = currentAmount + quantity
+      if (newAmount > cell.warehouse.capacity) {
+        console.warn(
+          `Cannot add ${quantity.toString()} ${resouce} to warehouse of cell ${cellId}, capacity exceeded`,
+        )
+        return
+      }
+
+      cellAdapter.updateOne(state, {
+        id: cellId,
+        changes: {
+          warehouse: {
+            ...cell.warehouse,
+            content: {
+              ...cell.warehouse.content,
+              [resouce]: newAmount,
+            },
+          },
+        },
+      })
     },
 
     terraformCell: (state, action: PayloadAction<{ cellId: string }>) => {
@@ -74,44 +114,9 @@ export const cellSlice = createAppSlice({
     },
     getCellIndex: state => cellAdapter.getSelectors().selectEntities(state),
   },
-  extraReducers: builder => {
-    builder.addCase(TaskSlice.actions.completeTask, (state, action) => {
-      const { cellId, taskType } = action.payload
-      const cell = cellAdapter.getSelectors().selectById(state, cellId)
-
-      if (!cell) {
-        console.warn(`cell ${cellId} not found`)
-        return
-      }
-
-      if (taskType === "TERRAFORM") {
-        cellAdapter.updateOne(state, {
-          id: cellId,
-          changes: {
-            state: HexCellState.DEVELOPED,
-          },
-        })
-      } else if (taskType === "PRODUCTION") {
-        const { resource } = action.payload
-        const currentAmount = cell.warehouse.content[resource] ?? 0
-        cellAdapter.updateOne(state, {
-          id: cellId,
-          changes: {
-            warehouse: {
-              ...cell.warehouse,
-              content: {
-                ...cell.warehouse.content,
-                [resource]: currentAmount + 1,
-              },
-            },
-          },
-        })
-      }
-    })
-  },
 })
 
-export const { addCells, terraformCell } = cellSlice.actions
+export const { addCells, terraformCell, addToWarehouse } = cellSlice.actions
 // export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
 export const { selectAll: getAllCells, selectById: getCellById } =

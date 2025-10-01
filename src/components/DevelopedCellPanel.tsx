@@ -46,14 +46,7 @@ export const DevelopedCellPanel = ({ cell }: Props) => {
       <div className="mb-4">
         <h4 className="font-medium mb-2">Production</h4>
         {production.map(prod => (
-          <ProductionUnit
-            key={prod.name}
-            product={prod}
-            cellId={cell.id}
-            buildingIds={buildings
-              .filter(b => b.production.some(p => p.name === prod.name))
-              .map(b => b.id)}
-          />
+          <ProductionUnit key={prod.name} product={prod} cellId={cell.id} />
         ))}
       </div>
 
@@ -77,7 +70,7 @@ export const DevelopedCellPanel = ({ cell }: Props) => {
                     </div>
                   </button>
                 ) : (
-                  <NewBuildingButton />
+                  <NewBuildingButton slotIndex={slotIndex} cellId={cell.id} />
                 )}
               </div>
             )

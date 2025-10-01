@@ -1,4 +1,5 @@
-import { type ProductRecipe } from "../production/types"
+import { type Action } from "@reduxjs/toolkit"
+// import { type ProductRecipe } from "../production/types"
 
 export enum TaskState {
   PENDING = "PENDING",
@@ -7,41 +8,18 @@ export enum TaskState {
   PAUSED = "PAUSED",
 }
 
-export interface TaskBase<TState extends TaskState = TaskState> {
+export interface Task {
   id: string
-  state: TState
+  state: TaskState
   /**
    * Duration of the task in milliseconds
    */
   createdAt: number
-  startedAt: TState extends "IN_PROGRESS" ? number : null
-  pausedAt: TState extends "PAUSED" ? number : null
-  completedAt: TState extends "COMPLETED" ? number : null
-  /**
-   * indicate if the production is contunuous (e.g. production task)
-   * or one-off (e.g. building, terraforming)
-   */
+  startedAt: number | null
+  pausedAt: number | null
+  completedAt: number | null
+  duration: number // in milliseconds
+  energyUsage: number // energy usage per second
   isContinuous: boolean
-  recipe: ProductRecipe
+  action: Action
 }
-
-export interface TerraformTask extends TaskBase {
-  taskType: "TERRAFORM"
-  cellId: string
-}
-
-export interface BuildingTask extends TaskBase {
-  taskType: "BUILDING"
-  cellId: string
-  slotIndex: number
-  buildingType: string
-}
-
-export interface ProductionTask extends TaskBase {
-  taskType: "PRODUCTION"
-  cellId: string
-  buildingIds: string[]
-  resource: string // resource being produced
-}
-
-export type Task = TerraformTask | BuildingTask | ProductionTask

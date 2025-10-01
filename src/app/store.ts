@@ -36,10 +36,6 @@ const rootReducer = combineSlices(
   cellSlice,
   gameSlice,
   buildingSlice,
-  // productionSlice,
-  // producerSlice,
-  // warehouseSlice,
-  // habitatSlice,
   researchSlice,
   TaskSlice,
 )

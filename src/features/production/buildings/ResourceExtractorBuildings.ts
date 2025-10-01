@@ -48,6 +48,7 @@ export const BasicMiner: ResourceExtractorBuilding = {
   storageCapacity: 50,
   production: [Ore],
   productionSpeedModifier: 0.0, // no speed bonus at basic level
+  requiredResearch: [],
 }
 
 export const AdvancedMiner: ResourceExtractorBuilding = {
@@ -75,6 +76,7 @@ export const AdvancedMiner: ResourceExtractorBuilding = {
   storageCapacity: 100,
   production: [Ore],
   productionSpeedModifier: 0.2, // 20% faster production
+  requiredResearch: ["resource-extraction"],
 }
 
 export const GasExtractor: ResourceExtractorBuilding = {
@@ -101,6 +103,7 @@ export const GasExtractor: ResourceExtractorBuilding = {
   storageCapacity: 75,
   production: [Gas],
   productionSpeedModifier: 0.0,
+  requiredResearch: [],
 }
 
 export const CrystalHarvester: ResourceExtractorBuilding = {
@@ -128,6 +131,7 @@ export const CrystalHarvester: ResourceExtractorBuilding = {
   storageCapacity: 30, // Smaller capacity for rare resources
   production: [Crystals],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["resource-diversification"],
 }
 
 export const BiomassCollector: ResourceExtractorBuilding = {
@@ -154,6 +158,7 @@ export const BiomassCollector: ResourceExtractorBuilding = {
   storageCapacity: 80,
   production: [Biomass],
   productionSpeedModifier: 0.1, // 10% faster production
+  requiredResearch: ["resource-extraction"],
 }
 
 export const PlasmaExtractor: ResourceExtractorBuilding = {
@@ -181,6 +186,7 @@ export const PlasmaExtractor: ResourceExtractorBuilding = {
   storageCapacity: 25, // Very small capacity for dangerous material
   production: [Plasma],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["energy-expansion"],
 }
 
 export const IsotopeRefinery: ResourceExtractorBuilding = {
@@ -208,6 +214,7 @@ export const IsotopeRefinery: ResourceExtractorBuilding = {
   storageCapacity: 20, // Minimal capacity for highly radioactive material
   production: [Isotopes],
   productionSpeedModifier: 0.0,
+  requiredResearch: ["rare-material-prospecting"],
 }
 
 export const resourceExtractorBuildings = [

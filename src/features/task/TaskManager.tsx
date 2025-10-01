@@ -17,10 +17,7 @@ export const TaskManager = () => {
     const now = Date.now()
 
     for (const task of tasks) {
-      if (
-        task.startedAt &&
-        now - task.startedAt >= task.recipe.buildTime * 1000
-      ) {
+      if (task.startedAt && now - task.startedAt >= task.duration * 1000) {
         results.push(task)
       }
     }
@@ -39,6 +36,7 @@ export const TaskManager = () => {
 
         for (const task of completedTasks) {
           dispatch(completeTask(task))
+          dispatch(task.action)
         }
       }
     }, TICK_RATE / 2) // check twice per tick

@@ -3,14 +3,13 @@ import { ResourceName } from "@/features/resources/types"
 import { range } from "lodash"
 import { HexCellState, type Cell } from "@/features/cell/types"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { selectHasClaimedNeighbor } from "@/features/cell/cellSlice"
-import { Button } from "./ui/button"
 import {
-  addTerraformTask,
-  selectTerraformingTask,
-} from "@/features/task/taskSlice"
+  selectHasClaimedNeighbor,
+  terraformCell,
+} from "@/features/cell/cellSlice"
+import { Button } from "./ui/button"
+import { addTask, selectTaskById } from "@/features/task/taskSlice"
 import TaskProgress from "./ui/TaskProgress"
-import { TaskState } from "@/features/task/types"
 
 interface Props {
   cell: Cell
@@ -19,7 +18,7 @@ interface Props {
 export const UnoccupiedCellInformation = ({ cell }: Props) => {
   const dispatch = useAppDispatch()
   const terraformingTask = useAppSelector(state =>
-    selectTerraformingTask(state, cell.id),
+    selectTaskById(state, `${cell.id}:terraforming`),
   )
 
   const isDiscovered = useAppSelector(state =>
@@ -28,7 +27,13 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
 
   const onDiscoverClick = () => {
     dispatch(
-      addTerraformTask({ cellId: cell.id, state: TaskState.IN_PROGRESS }),
+      addTask({
+        id: `${cell.id}:terraforming`,
+        action: terraformCell({ cellId: cell.id }),
+        duration: 60, // 60 seconds
+        energyUsage: 5_000, // 5 energy units per second
+        isContinuous: false,
+      }),
     )
   }
 
@@ -61,7 +66,7 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
           {...terraformingTask}
           startedAt={terraformingTask.startedAt}
           label="Terraforming in progress..."
-          duration={terraformingTask.recipe.buildTime * 1_000}
+          duration={terraformingTask.duration * 1_000}
         />
       )
     } else {

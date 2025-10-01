@@ -1,25 +1,19 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { Progress } from "./ui/progress"
-import {
-  addProductionTask,
-  removeTask,
-  selectProductionTask,
-} from "@/features/task/taskSlice"
+import { addTask, removeTask, selectTaskById } from "@/features/task/taskSlice"
 import { type Product } from "@/features/production/types"
 import TaskProgress from "./ui/TaskProgress"
+import { addToWarehouse } from "@/features/cell/cellSlice"
 
 interface Props {
   product: Product
   cellId: string
-  buildingIds: string[]
 }
 
-export const ProductionUnit = ({ product, cellId, buildingIds }: Props) => {
+export const ProductionUnit = ({ product, cellId }: Props) => {
   const dispatch = useAppDispatch()
-
-  const productionTask = useAppSelector(state =>
-    selectProductionTask(state, cellId, product.name),
-  )
+  const taskId = `${cellId}:production:${product.name}`
+  const productionTask = useAppSelector(state => selectTaskById(state, taskId))
 
   const isActive = !!productionTask
 
@@ -28,11 +22,16 @@ export const ProductionUnit = ({ product, cellId, buildingIds }: Props) => {
       dispatch(removeTask({ id: productionTask.id }))
     } else {
       dispatch(
-        addProductionTask({
-          cellId,
-          resource: product.name,
-          buildingIds,
-          recipe: product.recipe,
+        addTask({
+          id: taskId,
+          duration: product.recipe.buildTime,
+          energyUsage: product.recipe.energy,
+          isContinuous: true,
+          action: addToWarehouse({
+            cellId,
+            resource: product.name,
+            quantity: 1,
+          }),
         }),
       )
     }
@@ -72,7 +71,7 @@ export const ProductionUnit = ({ product, cellId, buildingIds }: Props) => {
             <div>
               <TaskProgress
                 startedAt={productionTask.startedAt}
-                duration={productionTask.recipe.buildTime * 1000}
+                duration={productionTask.duration * 1000}
                 state={productionTask.state}
               />
             </div>

@@ -1,12 +1,3 @@
-// BasicAmmo,
-// ArmorPiercingAmmo,
-// EnergyCell,
-// PlasmaRound,
-// ExplosiveShell,
-// GuidedMissile,
-// NuclearWarhead,
-// ShieldCapacitor,
-
 import { type Product } from "../types"
 
 export const BasicAmmo: Product = {

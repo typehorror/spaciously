@@ -145,4 +145,10 @@ export interface Building extends Product {
    * percentage modifier to production speed (e.g., 0.1 for +10% speed)
    */
   productionSpeedModifier: number
+
+  /**
+   * Research required to unlock this building.
+   * An empty array means the building is available from the start.
+   */
+  requiredResearch: string[]
 }

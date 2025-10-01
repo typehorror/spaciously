@@ -13,6 +13,7 @@ import {
   BasicMiner,
   GasExtractor,
 } from "../production/buildings/ResourceExtractorBuildings"
+import { SolarArray } from "../production/buildings/EnergyGeneratorBuildings"
 
 const FIRST_LANDING_RESOURCES: Record<ResourceName, number> = {
   [ResourceName.ORE]: 0,
@@ -58,6 +59,14 @@ export const IdleScreen = () => {
         planetId,
         coord: { q: 0, r: 0 },
         slotIndex: 3,
+      }),
+    )
+    dispatch(
+      addBuilding({
+        building: SolarArray,
+        planetId,
+        coord: { q: 0, r: 0 },
+        slotIndex: 1,
       }),
     )
     dispatch(updatePlayerName(name.trim()))
