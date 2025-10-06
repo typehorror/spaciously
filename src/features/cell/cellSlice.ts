@@ -12,9 +12,11 @@ import {
   type NewCell,
   type PlanetBoundaries,
   type Habitat,
+  type Warehouse,
 } from "./types"
 import { getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
+import { type ProductRecipe } from "../production/types"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -37,6 +39,53 @@ export const cellSlice = createAppSlice({
         }),
       )
       cellAdapter.addMany(state, cells)
+    },
+
+    consumeRecipe: (
+      state,
+      action: PayloadAction<{
+        cellId: string
+        recipe: ProductRecipe
+        ratio?: number
+      }>,
+    ) => {
+      const { cellId, recipe } = action.payload
+      const ratio = action.payload.ratio ?? 1
+      const cell = cellAdapter.getSelectors().selectById(state, cellId)
+
+      if (!cell) {
+        console.warn(`Cannot consume recipe in cell ${cellId}, cell not found`)
+        return
+      }
+
+      const changes: Record<string, number> = {}
+      for (const input of recipe.inputs) {
+        const currentAmount = Math.ceil(
+          cell.warehouse.content[input.product] ?? 0,
+        )
+
+        const newAmount = currentAmount - Math.ceil(input.quantity * ratio)
+        if (newAmount < 0) {
+          console.warn(
+            `Cannot consume recipe in cell ${cellId}, not enough ${input.product}`,
+          )
+        }
+        changes[input.product] = Math.max(newAmount, 0)
+      }
+
+      cellAdapter.updateOne(state, {
+        id: cellId,
+        changes: {
+          warehouse: {
+            ...cell.warehouse,
+            content: {
+              ...cell.warehouse.content,
+              ...changes,
+            },
+          },
+        },
+      })
+      // check if we have enough resources
     },
 
     addToWarehouse: (
@@ -116,7 +165,8 @@ export const cellSlice = createAppSlice({
   },
 })
 
-export const { addCells, terraformCell, addToWarehouse } = cellSlice.actions
+export const { addCells, terraformCell, addToWarehouse, consumeRecipe } =
+  cellSlice.actions
 // export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
 export const { selectAll: getAllCells, selectById: getCellById } =
@@ -254,3 +304,33 @@ export const selectPlanetHabitation = createDraftSafeSelector(
     )
   },
 )
+
+/**
+ * Check if a warehouse can produce a given recipe
+ * Returns the name of the first missing product
+ */
+export const getMissingProductForRecipe = (
+  warehouse: Warehouse,
+  recipe: ProductRecipe,
+  ratio = 1,
+): null | string => {
+  for (const input of recipe.inputs) {
+    const available = warehouse.content[input.product] ?? 0
+    if (available < Math.ceil(input.quantity * ratio)) {
+      return input.product
+    }
+  }
+  return null
+}
+
+export const terraformRecipe: ProductRecipe = {
+  inputs: [
+    {
+      product: "Gas",
+      quantity: 20,
+    },
+    { product: "Ore", quantity: 50 },
+  ],
+  energy: 100,
+  buildTime: 60,
+}

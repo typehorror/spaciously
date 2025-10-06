@@ -47,7 +47,10 @@ export const IdleScreen = () => {
     startCell.state = HexCellState.DEVELOPED
     dispatch(
       addBuilding({
-        building: BasicMiner,
+        building: {
+          ...BasicMiner,
+          health: BasicMiner.maxHealth * 0.75, // start damaged
+        },
         planetId,
         coord: { q: 0, r: 0 },
         slotIndex: 0,
@@ -55,7 +58,10 @@ export const IdleScreen = () => {
     )
     dispatch(
       addBuilding({
-        building: GasExtractor,
+        building: {
+          ...GasExtractor,
+          health: GasExtractor.maxHealth * 0.15, // start damaged
+        },
         planetId,
         coord: { q: 0, r: 0 },
         slotIndex: 3,
@@ -63,7 +69,10 @@ export const IdleScreen = () => {
     )
     dispatch(
       addBuilding({
-        building: SolarArray,
+        building: {
+          ...SolarArray,
+          health: SolarArray.maxHealth * 0.25, // start damaged
+        },
         planetId,
         coord: { q: 0, r: 0 },
         slotIndex: 1,

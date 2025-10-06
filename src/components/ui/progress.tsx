@@ -4,16 +4,9 @@ import { cn } from "@/lib/utils"
 
 type Props = React.ComponentProps<typeof ProgressPrimitive.Root> & {
   barClassName?: string
-  duration: number
 }
 
-function Progress({
-  className,
-  barClassName,
-  value,
-  duration,
-  ...props
-}: Props) {
+function Progress({ className, barClassName, value, ...props }: Props) {
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -31,8 +24,6 @@ function Progress({
         )}
         style={{
           transform: `translateX(-${(100 - (value ?? 0)).toString()}%)`,
-          transitionDuration: `${duration.toString()}ms`,
-          transitionTimingFunction: `linear`,
         }}
       />
     </ProgressPrimitive.Root>

@@ -5,6 +5,7 @@ import { App } from "./App"
 import { persistor, store } from "./app/store"
 import { PersistGate } from "redux-persist/integration/react"
 import "./index.css"
+import { Toaster } from "@/components/ui/sonner"
 
 const container = document.getElementById("root")
 
@@ -16,6 +17,7 @@ if (container) {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <App />
+          <Toaster position="bottom-left" richColors />
         </PersistGate>
       </Provider>
     </StrictMode>,

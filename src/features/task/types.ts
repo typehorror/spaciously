@@ -10,6 +10,7 @@ export enum TaskState {
 
 export interface Task {
   id: string
+  description: string
   state: TaskState
   /**
    * Duration of the task in milliseconds

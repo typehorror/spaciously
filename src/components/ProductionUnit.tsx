@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { Progress } from "./ui/progress"
 import { addTask, removeTask, selectTaskById } from "@/features/task/taskSlice"
 import { type Product } from "@/features/production/types"
-import TaskProgress from "./ui/TaskProgress"
+import { TaskBarProgress } from "./ui/taskProgress"
 import { addToWarehouse } from "@/features/cell/cellSlice"
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 
 export const ProductionUnit = ({ product, cellId }: Props) => {
   const dispatch = useAppDispatch()
-  const taskId = `${cellId}:production:${product.name}`
+  const taskId = `${cellId}:PRODUCTION:${product.name}`
   const productionTask = useAppSelector(state => selectTaskById(state, taskId))
 
   const isActive = !!productionTask
@@ -24,6 +24,7 @@ export const ProductionUnit = ({ product, cellId }: Props) => {
       dispatch(
         addTask({
           id: taskId,
+          description: `Producing ${product.name}`,
           duration: product.recipe.buildTime,
           energyUsage: product.recipe.energy,
           isContinuous: true,
@@ -69,19 +70,14 @@ export const ProductionUnit = ({ product, cellId }: Props) => {
         <div>
           {isActive && productionTask.startedAt ? (
             <div>
-              <TaskProgress
+              <TaskBarProgress
                 startedAt={productionTask.startedAt}
                 duration={productionTask.duration * 1000}
                 state={productionTask.state}
               />
             </div>
           ) : (
-            <Progress
-              value={0}
-              max={1}
-              duration={0}
-              barClassName="bg-gray-600"
-            />
+            <Progress value={0} max={1} barClassName="bg-gray-600" />
           )}
         </div>
       </div>

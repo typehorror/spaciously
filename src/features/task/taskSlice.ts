@@ -21,6 +21,7 @@ export const TaskSlice = createAppSlice({
       state,
       action: PayloadAction<{
         id: string
+        description: string
         duration: number
         energyUsage: number
         action: Action

@@ -19,10 +19,10 @@ export const ResearchButton: React.FC = () => {
 
   return (
     <Dialog>
-      <DialogTrigger>
-        {/* <Button variant="outline" size="sm"> */}
-        Research
-        {/* </Button> */}
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Research
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

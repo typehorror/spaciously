@@ -36,6 +36,19 @@ export const buildingSlice = createAppSlice({
   name: "building",
   initialState: buildingAdapter.getInitialState(),
   reducers: {
+    fixBuilding: (
+      state,
+      action: PayloadAction<{ id: string; health: number }>,
+    ) => {
+      const { health, id } = action.payload
+      const building = buildingAdapter.getSelectors().selectById(state, id)
+      if (building) {
+        buildingAdapter.updateOne(state, {
+          id,
+          changes: { health: building.health + health },
+        })
+      }
+    },
     addBuilding: (state, action: PayloadAction<AddBuildingActionPayload>) => {
       const { building, cellId, slotIndex } = resolveCellId(action.payload)
 
@@ -56,7 +69,7 @@ export const buildingSlice = createAppSlice({
   },
 })
 
-export const { addBuilding } = buildingSlice.actions
+export const { addBuilding, fixBuilding } = buildingSlice.actions
 
 const buildingSelectors = buildingAdapter.getSelectors<RootState>(
   s => s.building,

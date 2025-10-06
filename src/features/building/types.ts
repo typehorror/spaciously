@@ -11,13 +11,13 @@ export enum ProductName {
   AMMO = "Ammo",
 }
 
-export type Product = {
+export interface Product {
   name: ProductName
   cost: Partial<Record<ResourceName | ProductName, number>>
   density: number // quantity per unit volume
 }
 
-export type Resource = {
+export interface Resource {
   name: ResourceName
   density: number // quantity per unit volume
 }
@@ -33,7 +33,7 @@ type MultiplierRecord = Record<
 >
 
 // Type for maintenance items
-export type MaintenanceCost = {
+export interface MaintenanceCost {
   resource: AllResourceNames
   quantity: number
   period: number // Time in ms between maintenance checks
@@ -44,7 +44,7 @@ export type ProductionModifier = Pick<NewProduction, "name"> &
   Partial<Omit<NewProduction, "name">>
 
 // Type for expansion modifiers
-export type ExpansionModifier = {
+export interface ExpansionModifier {
   population?: {
     capacity: number
   }

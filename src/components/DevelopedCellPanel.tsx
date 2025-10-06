@@ -5,6 +5,7 @@ import { selectBuildingByCellId } from "@/features/building/buildingSlice"
 import { flatMap, range, uniqBy } from "lodash"
 import { ProductionUnit } from "./ProductionUnit"
 import { NewBuildingButton } from "./NewBuildingButton"
+import { CreatedBuildingButton } from "./CreatedBuildingButton"
 
 interface Props {
   cell: Cell
@@ -26,14 +27,6 @@ export const DevelopedCellPanel = ({ cell }: Props) => {
 
   return (
     <div className="flex flex-col h-full p-6 overflow-auto">
-      <div className="border-b pb-4 mb-4">
-        {/* <h3 className="text-lg font-semibold">{building.name}</h3>
-        <p className="text-sm text-muted-foreground">Level {building.level}</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {building.description}
-        </p> */}
-      </div>
-
       <div className="mb-4">
         <h4 className="font-medium mb-2">Habitation</h4>
         <div className="text-sm">
@@ -55,22 +48,17 @@ export const DevelopedCellPanel = ({ cell }: Props) => {
         <div className="grid grid-cols-2 gap-4">
           {range(0, cell.slots).map(slotIndex => {
             const building = buildings.find(b => b.slotIndex === slotIndex)
+
             return (
               <div key={slotIndex} className="mb-2">
                 {building ? (
-                  <button
-                    type="button"
-                    className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md border-white/20 border-2 hover:border-sky-500 text-gray-500 hover:bg-sky-950 transition"
-                  >
-                    <div className="font-semibold text-white">
-                      {building.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Level {building.level}
-                    </div>
-                  </button>
+                  <CreatedBuildingButton
+                    building={building}
+                    cell={cell}
+                    slotIndex={slotIndex}
+                  />
                 ) : (
-                  <NewBuildingButton slotIndex={slotIndex} cellId={cell.id} />
+                  <NewBuildingButton slotIndex={slotIndex} cell={cell} />
                 )}
               </div>
             )

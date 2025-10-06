@@ -4,12 +4,16 @@ import { range } from "lodash"
 import { HexCellState, type Cell } from "@/features/cell/types"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import {
+  consumeRecipe,
+  getMissingProductForRecipe,
   selectHasClaimedNeighbor,
   terraformCell,
+  terraformRecipe,
 } from "@/features/cell/cellSlice"
 import { Button } from "./ui/button"
 import { addTask, selectTaskById } from "@/features/task/taskSlice"
-import TaskProgress from "./ui/TaskProgress"
+import { TaskBarProgress } from "./ui/taskProgress"
+import { toast } from "sonner"
 
 interface Props {
   cell: Cell
@@ -26,11 +30,22 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
   )
 
   const onDiscoverClick = () => {
+    const missingResource = getMissingProductForRecipe(
+      cell.warehouse,
+      terraformRecipe,
+    )
+
+    if (missingResource) {
+      toast(`Cannot Terraform. Not enough ${missingResource} in warehouse.`)
+      return
+    }
+    dispatch(consumeRecipe({ cellId: cell.id, recipe: terraformRecipe }))
     dispatch(
       addTask({
         id: `${cell.id}:terraforming`,
+        description: "Terraforming",
         action: terraformCell({ cellId: cell.id }),
-        duration: 60, // 60 seconds
+        duration: 6, // 60 seconds
         energyUsage: 5_000, // 5 energy units per second
         isContinuous: false,
       }),
@@ -62,7 +77,7 @@ export const UnoccupiedCellInformation = ({ cell }: Props) => {
   const renderTerraformButton = () => {
     if (terraformingTask?.startedAt) {
       return (
-        <TaskProgress
+        <TaskBarProgress
           {...terraformingTask}
           startedAt={terraformingTask.startedAt}
           label="Terraforming in progress..."
