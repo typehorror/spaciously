@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { getNeighborCoords, hasClaimedNeighbor } from "./utils"
 import type { Cell } from "../cell/types"
-import { ResourceName } from "../cell/types"
+import { HexCellState, ResourceName } from "../cell/types"
 
 // construct a small toroidal map using the same coords style as cellGenerator
 // rows: r = -1,0,1 each with q ranges
@@ -17,29 +17,44 @@ const makeCells = (): Cell[] => {
       [ResourceName.PLASMA]: 0,
       [ResourceName.ISOTOPES]: 0,
     },
-    state: "unclaimed",
+    state: HexCellState.HIDDEN,
     planetId: 1,
     id: "1:0:0",
+    slots: 0,
+    warehouse: { units: 0, content: {} },
+    habitat: { population: 0, capacity: 0 },
   }
 
   const cells: Cell[] = [
-    { ...templateCell, id: "1:0:0", q: 0, r: 0, state: "claimed" },
+    { ...templateCell, id: "1:0:0", q: 0, r: 0, state: HexCellState.DEVELOPED },
 
-    { ...templateCell, id: "1:-1:0", q: -1, r: 0, state: "unclaimed" },
-    { ...templateCell, id: "1:-1:-1", q: -1, r: -1, state: "unclaimed" },
-    { ...templateCell, id: "1:-1:1", q: -1, r: 1, state: "unclaimed" },
+    { ...templateCell, id: "1:-1:0", q: -1, r: 0, state: HexCellState.HIDDEN },
+    {
+      ...templateCell,
+      id: "1:-1:-1",
+      q: -1,
+      r: -1,
+      state: HexCellState.HIDDEN,
+    },
+    { ...templateCell, id: "1:-1:1", q: -1, r: 1, state: HexCellState.HIDDEN },
 
-    { ...templateCell, id: "1:1:-1", q: 1, r: -1, state: "unclaimed" },
-    { ...templateCell, id: "1:1:0", q: 1, r: 0, state: "unclaimed" },
-    { ...templateCell, id: "1:1:1", q: 1, r: 1, state: "unclaimed" },
+    { ...templateCell, id: "1:1:-1", q: 1, r: -1, state: HexCellState.HIDDEN },
+    { ...templateCell, id: "1:1:0", q: 1, r: 0, state: HexCellState.HIDDEN },
+    { ...templateCell, id: "1:1:1", q: 1, r: 1, state: HexCellState.HIDDEN },
 
-    { ...templateCell, id: "1:-2:0", q: -2, r: 0, state: "unclaimed" },
-    { ...templateCell, id: "1:-2:-1", q: -2, r: -1, state: "unclaimed" },
-    { ...templateCell, id: "1:-2:1", q: -2, r: 1, state: "unclaimed" },
+    { ...templateCell, id: "1:-2:0", q: -2, r: 0, state: HexCellState.HIDDEN },
+    {
+      ...templateCell,
+      id: "1:-2:-1",
+      q: -2,
+      r: -1,
+      state: HexCellState.HIDDEN,
+    },
+    { ...templateCell, id: "1:-2:1", q: -2, r: 1, state: HexCellState.HIDDEN },
 
-    { ...templateCell, id: "1:2:-1", q: 2, r: -1, state: "unclaimed" },
-    { ...templateCell, id: "1:2:0", q: 2, r: 0, state: "unclaimed" },
-    { ...templateCell, id: "1:2:1", q: 2, r: 1, state: "unclaimed" },
+    { ...templateCell, id: "1:2:-1", q: 2, r: -1, state: HexCellState.HIDDEN },
+    { ...templateCell, id: "1:2:0", q: 2, r: 0, state: HexCellState.HIDDEN },
+    { ...templateCell, id: "1:2:1", q: 2, r: 1, state: HexCellState.HIDDEN },
   ]
 
   return cells
@@ -67,11 +82,10 @@ describe("map utils - wrapping", () => {
     // claim a cell that is logically neighbor across the wrap
     const found = cells.find(c => c.q === 2 && c.r === 0)
     if (!found) throw new Error("setup failure")
-    const claimed: Cell = { ...found, state: "claimed" }
+    const claimed: Cell = { ...found, state: HexCellState.DEVELOPED }
 
     const index: Record<string, Cell> = {}
-    for (const c of cells)
-      index[`1-${c.q.toString()}-${c.r.toString()}`] = { ...c }
+    for (const c of cells) index[c.id] = { ...c }
     index[claimed.id] = claimed
 
     // choose cell q=-2,r=0 which should have neighbor q=2,r=0 after wrap

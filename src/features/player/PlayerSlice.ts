@@ -1,7 +1,7 @@
 import type { PayloadAction } from "@reduxjs/toolkit"
 import { createAppSlice } from "../../app/createAppSlice"
 
-type PlayerState = {
+interface PlayerState {
   name: string
   score: number
 }

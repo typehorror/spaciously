@@ -1,7 +1,7 @@
-export type NewPlanet = {
+export interface NewPlanet {
   name: string
 }
 
-export type Planet = {
+export interface Planet extends NewPlanet {
   id: number
-} & NewPlanet
+}

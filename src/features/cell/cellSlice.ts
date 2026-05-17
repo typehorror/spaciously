@@ -24,6 +24,8 @@ const cellAdapter = createEntityAdapter({
   sortComparer: (a, b) => a.id.localeCompare(b.id),
 })
 
+export type CellIndex = Record<string, Cell | undefined>
+
 export const cellSlice = createAppSlice({
   name: "cell",
   initialState: cellAdapter.getInitialState(),

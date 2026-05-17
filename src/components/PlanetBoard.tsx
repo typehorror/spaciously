@@ -8,7 +8,7 @@ import { useAppDispatch } from "@/app/hooks"
 import { setFocusedCell } from "@/features/planet/planetSlice"
 import { type Cell } from "@/features/cell/types"
 
-type Props = {
+interface Props {
   cells: Cell[]
 }
 
@@ -79,8 +79,9 @@ const PlanetBoard: React.FC<Props> = ({ cells }) => {
         sceneRef.current.children,
         true,
       )
-      if (intersects.length > 0) {
-        const hit = intersects[0].object as THREE.Mesh
+      const firstHit = intersects[0]
+      if (firstHit) {
+        const hit = firstHit.object as THREE.Mesh
         const { q, r } = hit.userData as { q: number; r: number }
         if (q && r) {
           dispatch(setFocusedCell({ q, r })) // Dispatch to Redux
