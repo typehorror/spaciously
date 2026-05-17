@@ -1,3 +1,16 @@
+/**
+ * TaskProgress
+ *
+ * Two visual renderers for an in-progress task — a horizontal bar
+ * (TaskBarProgress) and a circular SVG ring (TaskCircleProgress).
+ *
+ * Both compute progress from the task's wall-clock `startedAt` and `duration`.
+ *
+ * Animation strategy: snap to the current % with no transition, then on the
+ * next tick set the target to 100% with `transitionDuration = remainingTime`.
+ * The CSS engine animates the rest linearly. Re-runs whenever startedAt,
+ * duration, or task state changes.
+ */
 import { TaskState } from "@/features/task/types"
 import { useEffect, useState } from "react"
 
@@ -17,22 +30,20 @@ export const TaskBarProgress: React.FC<TaskProgressProps> = props => {
   const [progress, setProgress] = useState(
     getProgressPercentage(props.startedAt, props.duration),
   )
-  const [duration, setDuration] = useState(props.duration)
+  const [transitionMs, setTransitionMs] = useState(props.duration)
 
   useEffect(() => {
-    // only animate if the task is in progress
-    if (props.state === TaskState.IN_PROGRESS) {
-      // onload or when startedAt/duration changes quickly set to current progress
-      setDuration(0) // no transition
-      setProgress(getProgressPercentage(props.startedAt, props.duration)) // current %
-      // then animate to 100%, the transition duration is the remaining time
-      const timeout = setTimeout(() => {
-        setProgress(100) // current %
-        setDuration(props.duration - (Date.now() - props.startedAt))
-      }, 50)
-      return () => {
-        clearTimeout(timeout)
-      }
+    if (props.state !== TaskState.IN_PROGRESS) return
+    setTransitionMs(0)
+    setProgress(getProgressPercentage(props.startedAt, props.duration))
+    const timeout = setTimeout(() => {
+      setProgress(100)
+      setTransitionMs(
+        Math.max(0, props.duration - (Date.now() - props.startedAt)),
+      )
+    }, 50)
+    return () => {
+      clearTimeout(timeout)
     }
   }, [props.startedAt, props.duration, props.state])
 
@@ -46,7 +57,7 @@ export const TaskBarProgress: React.FC<TaskProgressProps> = props => {
           className="h-full bg-green-400 transition-all ease-linear"
           style={{
             width: `${progress.toString()}%`,
-            transitionDuration: `${duration.toString()}ms`,
+            transitionDuration: `${transitionMs.toString()}ms`,
           }}
         ></div>
       </div>
@@ -55,15 +66,12 @@ export const TaskBarProgress: React.FC<TaskProgressProps> = props => {
 }
 
 export const TaskCircleProgress: React.FC<TaskProgressProps> = props => {
-  const [duration, setDuration] = useState(props.duration)
-
-  // Calculate circle properties
-  const size = 48 // Size of the circle
+  const size = 48
   const strokeWidth = 8
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
-  const strokeDasharray = circumference
 
+  const [transitionMs, setTransitionMs] = useState(props.duration)
   const [strokeDashoffset, setStrokeDashoffset] = useState(
     circumference -
       (getProgressPercentage(props.startedAt, props.duration) / 100) *
@@ -71,28 +79,24 @@ export const TaskCircleProgress: React.FC<TaskProgressProps> = props => {
   )
 
   useEffect(() => {
-    // only animate if the task is in progress
-    if (props.state === TaskState.IN_PROGRESS) {
-      // onload or when startedAt/duration changes quickly set to current progress
-      setDuration(0) // no transition
-      const currentProgress = getProgressPercentage(
-        props.startedAt,
-        props.duration,
+    if (props.state !== TaskState.IN_PROGRESS) return
+    setTransitionMs(0)
+    const currentProgress = getProgressPercentage(
+      props.startedAt,
+      props.duration,
+    )
+    setStrokeDashoffset(circumference - (currentProgress / 100) * circumference)
+    const timeout = setTimeout(() => {
+      setStrokeDashoffset(0)
+      setTransitionMs(
+        Math.max(0, props.duration - (Date.now() - props.startedAt)),
       )
-      setStrokeDashoffset(
-        circumference - (currentProgress / 100) * circumference,
-      )
-      // then animate to 100%, the transition duration is the remaining time
-      const timeout = setTimeout(() => {
-        setStrokeDashoffset(0) // 100% progress = 0 offset
-        setDuration(props.duration - (Date.now() - props.startedAt))
-      }, 50)
-      return () => {
-        clearTimeout(timeout)
-      }
+    }, 50)
+    return () => {
+      clearTimeout(timeout)
     }
   }, [props.startedAt, props.duration, props.state, circumference])
-  console.log({ duration, strokeDashoffset })
+
   return (
     <div className="flex flex-col items-center">
       {props.label && (
@@ -100,7 +104,6 @@ export const TaskCircleProgress: React.FC<TaskProgressProps> = props => {
       )}
       <div className="relative">
         <svg width={size} height={size} className="transform -rotate-90">
-          {/* Background circle */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -110,19 +113,18 @@ export const TaskCircleProgress: React.FC<TaskProgressProps> = props => {
             fill="transparent"
             className="opacity-20"
           />
-          {/* Progress circle */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke="rgb(74, 222, 128)" // green-400
+            stroke="rgb(74, 222, 128)"
             strokeWidth={strokeWidth}
             fill="transparent"
             strokeLinecap="round"
-            strokeDasharray={strokeDasharray}
+            strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             style={{
-              transition: `stroke-dashoffset ${duration.toString()}ms linear`,
+              transition: `stroke-dashoffset ${transitionMs.toString()}ms linear`,
             }}
           />
         </svg>

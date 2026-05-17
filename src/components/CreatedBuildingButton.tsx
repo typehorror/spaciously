@@ -129,10 +129,10 @@ export const CreatedBuildingButton: React.FC<Props> = ({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md border-white/20 border-2 hover:border-green-600 text-gray-500 hover:bg-green-950/50 transition"
+          className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md bg-white/[0.03] border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/5 text-white/80 transition"
         >
           <div className="font-semibold text-white">{building.name}</div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300/60">
             Level {building.level}
           </div>
           {building.health < building.maxHealth && (

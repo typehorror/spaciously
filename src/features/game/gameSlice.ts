@@ -32,8 +32,6 @@ export const gameSlice = createAppSlice({
       state.pauseTime = action.payload
     },
   },
-  // You can define your selectors here. These selectors receive the slice
-  // state as their first argument.
   selectors: {
     selectGameStatus: game => game.status,
     selectGameStartTime: game => game.startTime,

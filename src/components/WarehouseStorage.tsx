@@ -1,23 +1,46 @@
+/**
+ * WarehouseStorage
+ *
+ * Renders a cell's warehouse as a row of small storage-unit chips, one per
+ * unit of capacity. Hovering any unit reveals its resource and quantity in
+ * the section header (with a small debounce so the reveal doesn't flicker
+ * as the cursor sweeps across the row).
+ *
+ * Public API: <WarehouseUnit warehouse={Warehouse} />
+ */
 import { type Warehouse } from "@/features/cell/types"
 import { getStorageUnits } from "@/features/cell/utils"
 import { WarehouseStorageUnit } from "./WarehouseStorageUnit"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { ConsoleSection } from "./CellInspectorChrome"
+import { WarehouseIcon } from "lucide-react"
 
 interface Props {
   warehouse: Warehouse
-  className?: string
 }
 
 const renderQty = (qty?: number) => (qty ?? 0).toLocaleString()
 
-export const WarehouseUnit = ({ warehouse, className }: Props) => {
+export const WarehouseUnit = ({ warehouse }: Props) => {
   const units = getStorageUnits(warehouse)
-  const [hoverResourceName, setHoverResourceName] = useState<string>("")
+  const [hoverResourceName, _setHoverResourceName] = useState<string>("")
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
+
+  const setHoverResourceName = (name: string) => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current)
+    }
+    debounceTimeout.current = setTimeout(
+      () => {
+        _setHoverResourceName(name)
+      },
+      name === "" ? 300 : 0,
+    )
+  }
 
   const handleMouseEnter = (resourceName: string) => () => {
     setHoverResourceName(resourceName)
   }
-
   const handleMouseLeave = () => {
     setHoverResourceName("")
   }
@@ -27,17 +50,16 @@ export const WarehouseUnit = ({ warehouse, className }: Props) => {
     const key = `unit-${resKey}-${index.toString()}`
     const resourceName = unit.resource ?? ""
     const qty = unit.resource ? (warehouse.content[unit.resource] ?? 0) : 0
-
     return (
       <div
-        className={`inline-block mr-1`}
+        className="inline-block mr-1"
         key={key}
         onMouseEnter={handleMouseEnter(
           resourceName ? `${resourceName}: ${qty.toString()}` : "Empty",
         )}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="w-4 gap-0.5 grid grid-cols-2 p-0.5 hover:border-gray-500/70 border border-transparent rounded-xs">
+        <div className="w-4 gap-0.5 grid grid-cols-2 p-0.5 hover:border-cyan-400/60 hover:bg-cyan-400/10 border border-transparent rounded-xs">
           <WarehouseStorageUnit
             points={unit.quantity}
             resource={resourceName}
@@ -49,23 +71,18 @@ export const WarehouseUnit = ({ warehouse, className }: Props) => {
   })
 
   return (
-    <div className={className}>
-      <h4 className="font-medium mb-2 flex flex-between items-end">
-        <div className="flex-1">
-          <span>Warehouse</span>
-          {hoverResourceName && (
-            <span className="text-sm text-gray-400 ml-4">
-              {hoverResourceName}
-            </span>
-          )}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Cap. {renderQty(warehouse.capacity)}
-        </div>
-      </h4>
-      <div className="mt-2 text-sm">
-        <div className="mt-1">{nodes}</div>
-      </div>
-    </div>
+    <ConsoleSection
+      title="Warehouse"
+      icon={WarehouseIcon}
+      meta={
+        hoverResourceName ? (
+          <span className="text-white/70">{hoverResourceName}</span>
+        ) : (
+          `Cap. ${renderQty(warehouse.capacity)}`
+        )
+      }
+    >
+      <div className="text-sm leading-relaxed">{nodes}</div>
+    </ConsoleSection>
   )
 }

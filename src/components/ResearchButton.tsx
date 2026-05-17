@@ -12,6 +12,7 @@ import {
   selectAvailableResearches,
   unlockResearch,
 } from "@/features/research/researchSlice"
+import { FlaskConicalIcon } from "lucide-react"
 
 export const ResearchButton: React.FC = () => {
   const available = useAppSelector(state => selectAvailableResearches(state))
@@ -20,8 +21,9 @@ export const ResearchButton: React.FC = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Research
+        <Button variant="outline" size="sm" aria-label="Research">
+          <FlaskConicalIcon className="w-4 h-4" />
+          <span className="hidden md:inline">Research</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -92,9 +92,9 @@ export const NewBuildingButton: React.FC<Props> = ({ cell, slotIndex }) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md border-white/20 border hover:border-solid hover:border-white/40 border-dashed text-gray-500 hover:text-gray-200 hover:bg-white/5 transition">
-        <PlusIcon size={24} />
-        <span> Build</span>
+      <DialogTrigger className="flex justify-center items-center flex-col gap-1.5 w-full h-32 rounded-md border-white/15 border border-dashed text-white/40 hover:border-cyan-400/50 hover:text-cyan-200 hover:bg-cyan-400/5 transition">
+        <PlusIcon size={22} />
+        <span className="text-xs uppercase tracking-[0.2em]">Build</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
