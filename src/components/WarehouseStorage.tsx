@@ -10,6 +10,7 @@
  */
 import { type Warehouse } from "@/features/cell/types"
 import { getStorageUnits } from "@/features/cell/utils"
+import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 import { WarehouseStorageUnit } from "./WarehouseStorageUnit"
 import { useRef, useState } from "react"
 import { ConsoleSection } from "./CellInspectorChrome"
@@ -78,7 +79,7 @@ export const WarehouseUnit = ({ warehouse }: Props) => {
         hoverResourceName ? (
           <span className="text-white/70">{hoverResourceName}</span>
         ) : (
-          `Cap. ${renderQty(warehouse.capacity)}`
+          `Cap. ${renderQty(warehouse.units * WAREHOUSE_UNIT_CAPACITY)}`
         )
       }
     >

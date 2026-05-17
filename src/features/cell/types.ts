@@ -44,9 +44,11 @@ export interface Habitat {
 
 export interface Warehouse {
   /**
-   * The storage capacity of the cell's warehouse, if any.
+   * Number of storage units in the warehouse. Each unit holds at most one
+   * resource type, up to WAREHOUSE_UNIT_CAPACITY of it. The absolute storage
+   * capacity is the derived value `units * WAREHOUSE_UNIT_CAPACITY`.
    */
-  capacity: number
+  units: number
   /**
    * The amount of resources currently stored in the cell's warehouse.
    */
