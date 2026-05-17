@@ -39,6 +39,7 @@ import {
 import PlanetBoard from "./components/PlanetBoard"
 import { ResearchButton } from "./components/ResearchButton"
 import { TaskManager } from "./features/task/TaskManager"
+import { ProductionTicker } from "./features/production/ProductionTicker"
 import { selectAllActiveTasks } from "./features/task/taskSlice"
 import {
   DropdownMenu,
@@ -224,6 +225,7 @@ export function Game() {
   return (
     <>
       <TaskManager />
+      <ProductionTicker />
       <div className="flex h-full flex-col">
         <header className="shrink-0 relative">
           <div

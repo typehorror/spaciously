@@ -14,9 +14,19 @@ import {
   type Habitat,
   type Warehouse,
 } from "./types"
-import { getAvailableSpaceForResource, getCellId, parseCellId } from "./utils"
+import { getCellId, parseCellId } from "./utils"
+import {
+  acceptCycle,
+  addStored,
+  claimBuffer,
+  getAvailableSpaceForResource,
+  getResourceQuantity,
+  releaseBuffer,
+  removeStored,
+} from "./warehouse"
 import { type RootState } from "@/app/store"
 import { type ProductRecipe } from "../production/types"
+import { productionSlice } from "../production/productionSlice"
 import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 
 const cellAdapter = createEntityAdapter({
@@ -61,34 +71,18 @@ export const cellSlice = createAppSlice({
         return
       }
 
-      const changes: Record<string, number> = {}
+      // Crash-early per ADR-0001: recipe consumption is an internal call
+      // path that must have validated inputs upstream. removeStored throws
+      // on insufficient quantity rather than silently clamping.
+      let warehouse = cell.warehouse
       for (const input of recipe.inputs) {
-        const currentAmount = Math.ceil(
-          cell.warehouse.content[input.product] ?? 0,
-        )
-
-        const newAmount = currentAmount - Math.ceil(input.quantity * ratio)
-        if (newAmount < 0) {
-          console.warn(
-            `Cannot consume recipe in cell ${cellId}, not enough ${input.product}`,
-          )
-        }
-        changes[input.product] = Math.max(newAmount, 0)
+        const needed = Math.ceil(input.quantity * ratio)
+        warehouse = removeStored(warehouse, input.product, needed)
       }
-
       cellAdapter.updateOne(state, {
         id: cellId,
-        changes: {
-          warehouse: {
-            ...cell.warehouse,
-            content: {
-              ...cell.warehouse.content,
-              ...changes,
-            },
-          },
-        },
+        changes: { warehouse },
       })
-      // check if we have enough resources
     },
 
     addToWarehouse: (
@@ -109,25 +103,17 @@ export const cellSlice = createAppSlice({
         return
       }
 
-      // Clip to whatever fits under the unit invariant. Silent drop on
-      // overflow is intentional — a full warehouse is normal game state, not
-      // a programmer bug.
+      // Best-effort path: clip to available space before delegating to
+      // addStored, which crashes on overflow. Non-production callers (gifts,
+      // transfers, debug) intentionally accept silent clipping here; the
+      // strict deposit path for productions is depositIntoBuffer.
       const available = getAvailableSpaceForResource(cell.warehouse, resource)
       const stored = Math.min(Math.max(quantity, 0), available)
       if (stored <= 0) return
 
-      const currentAmount = cell.warehouse.content[resource] ?? 0
       cellAdapter.updateOne(state, {
         id: cellId,
-        changes: {
-          warehouse: {
-            ...cell.warehouse,
-            content: {
-              ...cell.warehouse.content,
-              [resource]: currentAmount + stored,
-            },
-          },
-        },
+        changes: { warehouse: addStored(cell.warehouse, resource, stored) },
       })
     },
 
@@ -164,6 +150,62 @@ export const cellSlice = createAppSlice({
       return cellAdapter.getSelectors().selectById(state, id)
     },
     getCellIndex: state => cellAdapter.getSelectors().selectEntities(state),
+  },
+
+  // Cross-slice reactions. A production order is owned by productionSlice,
+  // but the buffer it occupies lives in the warehouse — these two writes
+  // happen as one logical change, so cellSlice listens directly to the
+  // productionSlice action rather than relying on a second dispatch.
+  extraReducers: builder => {
+    builder.addCase(
+      productionSlice.actions.productionStarted,
+      (state, action) => {
+        const { cellId, productName, resource } = action.payload
+        const cell = cellAdapter.getSelectors().selectById(state, cellId)
+        if (!cell) return
+        // Idempotent: a re-dispatch (UI churn, replayed action) must not
+        // claim a second buffer for the same production. The action is the
+        // standing intent, not the imperative "do the claim now."
+        const alreadyClaimed = cell.warehouse.units.some(
+          unit => unit.type === "buffer" && unit.productName === productName,
+        )
+        if (alreadyClaimed) return
+        cellAdapter.updateOne(state, {
+          id: cellId,
+          changes: { warehouse: claimBuffer(cell.warehouse, productName, resource) },
+        })
+      },
+    )
+    builder.addCase(
+      productionSlice.actions.productionStopped,
+      (state, action) => {
+        const { cellId, productName } = action.payload
+        const cell = cellAdapter.getSelectors().selectById(state, cellId)
+        if (!cell) return
+        const hasBuffer = cell.warehouse.units.some(
+          unit => unit.type === "buffer" && unit.productName === productName,
+        )
+        if (!hasBuffer) return
+        cellAdapter.updateOne(state, {
+          id: cellId,
+          changes: { warehouse: releaseBuffer(cell.warehouse, productName) },
+        })
+      },
+    )
+    builder.addCase(
+      productionSlice.actions.cycleDeposited,
+      (state, action) => {
+        const { cellId, productName, quantity } = action.payload
+        const cell = cellAdapter.getSelectors().selectById(state, cellId)
+        if (!cell) return
+        cellAdapter.updateOne(state, {
+          id: cellId,
+          changes: {
+            warehouse: acceptCycle(cell.warehouse, productName, quantity),
+          },
+        })
+      },
+    )
   },
 })
 
@@ -274,9 +316,9 @@ export const selectPlanetWarehousesContent = createDraftSafeSelector(
     return cells
       .filter(c => c.planetId === planetId)
       .reduce((acc: WarehouseContent, c: Cell) => {
-        for (const resourceName in c.warehouse.content) {
-          acc[resourceName] =
-            (acc[resourceName] ?? 0) + (c.warehouse.content[resourceName] ?? 0)
+        for (const unit of c.warehouse.units) {
+          if (unit.type === "empty") continue
+          acc[unit.resource] = (acc[unit.resource] ?? 0) + unit.quantity
         }
         return acc
       }, {})
@@ -286,7 +328,7 @@ export const selectPlanetWarehousesContent = createDraftSafeSelector(
 export const selectCellWarehouseCapacity = createDraftSafeSelector(
   [(state: RootState, cellId: string) => selectCellById(state, cellId)],
   (cell): number => {
-    return cell ? cell.warehouse.units * WAREHOUSE_UNIT_CAPACITY : 0
+    return cell ? cell.warehouse.units.length * WAREHOUSE_UNIT_CAPACITY : 0
   },
 )
 
@@ -317,7 +359,7 @@ export const getMissingProductForRecipe = (
   ratio = 1,
 ): null | string => {
   for (const input of recipe.inputs) {
-    const available = warehouse.content[input.product] ?? 0
+    const available = getResourceQuantity(warehouse, input.product)
     if (available < Math.ceil(input.quantity * ratio)) {
       return input.product
     }

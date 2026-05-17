@@ -56,7 +56,7 @@ export const DevelopedCellPanel = ({ cell }: Props) => {
         </div>
       </ConsoleSection>
 
-      <WarehouseUnit warehouse={warehouse} />
+      <WarehouseUnit warehouse={warehouse} cellId={cell.id} />
 
       <ConsoleSection
         title="Production"

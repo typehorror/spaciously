@@ -19,6 +19,7 @@ import { gameSlice } from "@/features/game/gameSlice"
 import { buildingSlice } from "@/features/building/buildingSlice"
 import { researchSlice } from "@/features/research/researchSlice"
 import { TaskSlice } from "@/features/task/taskSlice"
+import { productionSlice } from "@/features/production/productionSlice"
 
 const persistConfig = {
   key: "root",
@@ -38,6 +39,7 @@ const rootReducer = combineSlices(
   buildingSlice,
   researchSlice,
   TaskSlice,
+  productionSlice,
 )
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

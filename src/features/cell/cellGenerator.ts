@@ -18,8 +18,9 @@ export function cellGenerator(size: number): NewCell[] {
         resources: distributeResources(),
         slots: 4,
         warehouse: {
-          units: WAREHOUSE_UNITS,
-          content: {},
+          units: Array.from({ length: WAREHOUSE_UNITS }, () => ({
+            type: "empty",
+          })),
         },
         habitat: { population: 0, capacity: 0 },
       })

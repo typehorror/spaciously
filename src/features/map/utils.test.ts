@@ -21,7 +21,7 @@ const makeCells = (): Cell[] => {
     planetId: 1,
     id: "1:0:0",
     slots: 0,
-    warehouse: { units: 0, content: {} },
+    warehouse: { units: [] },
     habitat: { population: 0, capacity: 0 },
   }
 

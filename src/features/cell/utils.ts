@@ -1,6 +1,4 @@
 import type { CellCoord } from "./types"
-import { type Warehouse } from "./types"
-import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 
 /**
  * Generates a unique cell ID based on its coordinates and planet ID.
@@ -54,67 +52,3 @@ export function resolveCellId<T extends CellRef>(
   }
 }
 
-/**
- * How much more of `resource` can be stored in the warehouse before either
- * the resource's current partial unit is full or no free unit remains.
- *
- * Accounting: a resource with quantity q occupies ceil(q / UNIT) units. Free
- * space for that resource is therefore (UNIT - q % UNIT) inside its current
- * partial unit, if any, plus UNIT capacity for every unclaimed unit.
- */
-export const getAvailableSpaceForResource = (
-  warehouse: Warehouse,
-  resource: string,
-): number => {
-  let occupiedUnits = 0
-  let partialSpaceForResource = 0
-  for (const resourceName in warehouse.content) {
-    const qty = warehouse.content[resourceName] ?? 0
-    if (qty <= 0) continue
-    occupiedUnits += Math.ceil(qty / WAREHOUSE_UNIT_CAPACITY)
-    if (resourceName === resource) {
-      const remainder = qty % WAREHOUSE_UNIT_CAPACITY
-      partialSpaceForResource =
-        remainder === 0 ? 0 : WAREHOUSE_UNIT_CAPACITY - remainder
-    }
-  }
-  const freeUnits = Math.max(0, warehouse.units - occupiedUnits)
-  return partialSpaceForResource + freeUnits * WAREHOUSE_UNIT_CAPACITY
-}
-
-interface StorageUnit {
-  resource: string | null
-  quantity: number
-}
-/**
- * Allows for a simplified rendering by iterating over storage units
- * @param warehouse
- */
-export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
-  const storageUnits: StorageUnit[] = []
-  for (const resourceName in warehouse.content) {
-    const resourceQty = warehouse.content[resourceName] ?? 0
-    const fullUnits = Math.floor(resourceQty / WAREHOUSE_UNIT_CAPACITY)
-    const remainder = resourceQty % WAREHOUSE_UNIT_CAPACITY
-
-    for (let i = 0; i < fullUnits; i++) {
-      storageUnits.push({
-        resource: resourceName,
-        quantity: WAREHOUSE_UNIT_CAPACITY,
-      })
-    }
-
-    if (remainder > 0) {
-      storageUnits.push({
-        resource: resourceName,
-        quantity: remainder,
-      })
-    }
-  }
-
-  for (let i = storageUnits.length; i < warehouse.units; i++) {
-    storageUnits.push({ resource: null, quantity: 0 })
-  }
-
-  return storageUnits
-}
