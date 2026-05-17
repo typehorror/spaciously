@@ -14,10 +14,10 @@ import {
   type Habitat,
   type Warehouse,
 } from "./types"
-import { getCellId, parseCellId } from "./utils"
+import { getAvailableSpaceForResource, getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
 import { type ProductRecipe } from "../production/types"
-import { reduce } from "lodash"
+import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -97,7 +97,7 @@ export const cellSlice = createAppSlice({
         quantity: number
       }>,
     ) => {
-      const { cellId, resource: resouce, quantity } = action.payload
+      const { cellId, resource, quantity } = action.payload
       const cell = cellAdapter.getSelectors().selectById(state, cellId)
 
       if (!cell) {
@@ -107,23 +107,14 @@ export const cellSlice = createAppSlice({
         return
       }
 
-      // compute the all resource stored quantity
-      const totalStored = reduce(
-        cell.warehouse.content,
-        (prev = 0, content = 0) => prev + content,
-        0,
-      )
+      // Clip to whatever fits under the unit invariant. Silent drop on
+      // overflow is intentional — a full warehouse is normal game state, not
+      // a programmer bug.
+      const available = getAvailableSpaceForResource(cell.warehouse, resource)
+      const stored = Math.min(Math.max(quantity, 0), available)
+      if (stored <= 0) return
 
-      if (totalStored + quantity > cell.warehouse.capacity) {
-        console.warn(
-          `Cannot add ${quantity.toString()} ${resouce} to warehouse of cell ${cellId}, capacity exceeded`,
-        )
-        return
-      }
-
-      const currentAmount = cell.warehouse.content[resouce] ?? 0
-      const newAmount = currentAmount + quantity
-
+      const currentAmount = cell.warehouse.content[resource] ?? 0
       cellAdapter.updateOne(state, {
         id: cellId,
         changes: {
@@ -131,7 +122,7 @@ export const cellSlice = createAppSlice({
             ...cell.warehouse,
             content: {
               ...cell.warehouse.content,
-              [resouce]: newAmount,
+              [resource]: currentAmount + stored,
             },
           },
         },
@@ -293,7 +284,7 @@ export const selectPlanetWarehousesContent = createDraftSafeSelector(
 export const selectCellWarehouseCapacity = createDraftSafeSelector(
   [(state: RootState, cellId: string) => selectCellById(state, cellId)],
   (cell): number => {
-    return cell ? cell.warehouse.capacity : 0
+    return cell ? cell.warehouse.units * WAREHOUSE_UNIT_CAPACITY : 0
   },
 )
 

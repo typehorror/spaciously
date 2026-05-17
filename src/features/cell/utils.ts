@@ -54,24 +54,32 @@ export function resolveCellId<T extends CellRef>(
   }
 }
 
+/**
+ * How much more of `resource` can be stored in the warehouse before either
+ * the resource's current partial unit is full or no free unit remains.
+ *
+ * Accounting: a resource with quantity q occupies ceil(q / UNIT) units. Free
+ * space for that resource is therefore (UNIT - q % UNIT) inside its current
+ * partial unit, if any, plus UNIT capacity for every unclaimed unit.
+ */
 export const getAvailableSpaceForResource = (
   warehouse: Warehouse,
   resource: string,
-) => {
-  let availableUnits = warehouse.capacity
-  let availableForResource = 0
+): number => {
+  let occupiedUnits = 0
+  let partialSpaceForResource = 0
   for (const resourceName in warehouse.content) {
-    const resourceQty = warehouse.content[resourceName] ?? 0
-
-    availableUnits -= Math.ceil(resourceQty / WAREHOUSE_UNIT_CAPACITY)
+    const qty = warehouse.content[resourceName] ?? 0
+    if (qty <= 0) continue
+    occupiedUnits += Math.ceil(qty / WAREHOUSE_UNIT_CAPACITY)
     if (resourceName === resource) {
-      const remainder = resourceQty % WAREHOUSE_UNIT_CAPACITY
-      if (remainder > 0) {
-        availableForResource += WAREHOUSE_UNIT_CAPACITY - remainder
-      }
+      const remainder = qty % WAREHOUSE_UNIT_CAPACITY
+      partialSpaceForResource =
+        remainder === 0 ? 0 : WAREHOUSE_UNIT_CAPACITY - remainder
     }
   }
-  return availableForResource + availableUnits * WAREHOUSE_UNIT_CAPACITY
+  const freeUnits = Math.max(0, warehouse.units - occupiedUnits)
+  return partialSpaceForResource + freeUnits * WAREHOUSE_UNIT_CAPACITY
 }
 
 interface StorageUnit {
@@ -87,7 +95,6 @@ export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
   for (const resourceName in warehouse.content) {
     const resourceQty = warehouse.content[resourceName] ?? 0
     const fullUnits = Math.floor(resourceQty / WAREHOUSE_UNIT_CAPACITY)
-    // const usedUnits = Math.ceil(resourceQty / WAREHOUSE_UNIT_CAPACITY)
     const remainder = resourceQty % WAREHOUSE_UNIT_CAPACITY
 
     for (let i = 0; i < fullUnits; i++) {
@@ -97,7 +104,7 @@ export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
       })
     }
 
-    if (remainder > 0 && storageUnits.length < warehouse.capacity) {
+    if (remainder > 0) {
       storageUnits.push({
         resource: resourceName,
         quantity: remainder,
@@ -105,12 +112,7 @@ export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
     }
   }
 
-  // add the empty units assuming each unit capacity is WAREHOUSE_UNIT_CAPACITY
-  for (
-    let i = storageUnits.length;
-    i < warehouse.capacity / WAREHOUSE_UNIT_CAPACITY;
-    i++
-  ) {
+  for (let i = storageUnits.length; i < warehouse.units; i++) {
     storageUnits.push({ resource: null, quantity: 0 })
   }
 
