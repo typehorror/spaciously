@@ -1,3 +1,4 @@
+import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 import { ResourceName, GeneratedResourceName } from "../resources/types"
 import { type NewBuilding, ProductName } from "./types"
 
@@ -46,7 +47,8 @@ export const getColonyLander = (): NewBuilding => {
       content: {
         [ProductName.AMMO]: 10,
       },
-      capacity: 2 * 3 * 5, // 30 units
+      // 20 warehouse units at 8 capacity each
+      capacity: WAREHOUSE_UNIT_CAPACITY * 20,
     },
     production: [
       {

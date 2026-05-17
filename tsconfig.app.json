@@ -24,7 +24,6 @@
     "noUncheckedSideEffectImports": true,
     "noUncheckedIndexedAccess": true,
     "types": ["vitest/globals"],
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

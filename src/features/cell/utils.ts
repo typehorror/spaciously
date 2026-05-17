@@ -1,7 +1,6 @@
 import type { CellCoord } from "./types"
 import { type Warehouse } from "./types"
-
-export const WAREHOUSE_UNIT_CAPACITY = 8
+import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
 
 /**
  * Generates a unique cell ID based on its coordinates and planet ID.
@@ -106,8 +105,12 @@ export const getStorageUnits = (warehouse: Warehouse): StorageUnit[] => {
     }
   }
 
-  // add the empty units
-  for (let i = storageUnits.length; i < warehouse.capacity; i++) {
+  // add the empty units assuming each unit capacity is WAREHOUSE_UNIT_CAPACITY
+  for (
+    let i = storageUnits.length;
+    i < warehouse.capacity / WAREHOUSE_UNIT_CAPACITY;
+    i++
+  ) {
     storageUnits.push({ resource: null, quantity: 0 })
   }
 

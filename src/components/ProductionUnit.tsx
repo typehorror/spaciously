@@ -58,12 +58,9 @@ export const ProductionUnit = ({ product, cellId }: Props) => {
                 Click to Stop
               </span>
             ) : (
-              <>
-                <span className="text-gray-600 group-hover:hidden">Off</span>
-                <span className="text-gray-400 group-hover:inline hidden">
-                  Click to Start
-                </span>
-              </>
+              <span className="text-gray-400 opacity-50 transition-opacity group-hover:opacity-100">
+                Click to Start
+              </span>
             )}
           </div>
         </div>

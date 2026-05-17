@@ -1,5 +1,6 @@
 import { HexCellState, type NewCell } from "./types"
 import { distributeResources } from "../resources/resources"
+import { WAREHOUSE_CAPACITY } from "@/config"
 
 /**
  * Generate hexagonal map with projection (fewer hexes at top/bottom)
@@ -17,7 +18,7 @@ export function cellGenerator(size: number): NewCell[] {
         resources: distributeResources(),
         slots: 4,
         warehouse: {
-          capacity: 2 * 3 * 5,
+          capacity: WAREHOUSE_CAPACITY,
           content: {},
         },
         habitat: { population: 0, capacity: 0 },

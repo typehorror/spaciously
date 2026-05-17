@@ -17,6 +17,7 @@ import {
 import { getCellId, parseCellId } from "./utils"
 import { type RootState } from "@/app/store"
 import { type ProductRecipe } from "../production/types"
+import { reduce } from "lodash"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -106,14 +107,22 @@ export const cellSlice = createAppSlice({
         return
       }
 
-      const currentAmount = cell.warehouse.content[resouce] ?? 0
-      const newAmount = currentAmount + quantity
-      if (newAmount > cell.warehouse.capacity) {
+      // compute the all resource stored quantity
+      const totalStored = reduce(
+        cell.warehouse.content,
+        (prev = 0, content = 0) => prev + content,
+        0,
+      )
+
+      if (totalStored + quantity > cell.warehouse.capacity) {
         console.warn(
           `Cannot add ${quantity.toString()} ${resouce} to warehouse of cell ${cellId}, capacity exceeded`,
         )
         return
       }
+
+      const currentAmount = cell.warehouse.content[resouce] ?? 0
+      const newAmount = currentAmount + quantity
 
       cellAdapter.updateOne(state, {
         id: cellId,
