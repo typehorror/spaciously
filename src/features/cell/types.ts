@@ -3,9 +3,24 @@ export interface CellCoord {
   r: number
 }
 
+/**
+ * A cell's progression along the player's *awareness* of it. The four states
+ * are strictly ordered — `hidden < sighted < surveyed < developed` — and
+ * knowledge is sticky (cells never downgrade; see `cellSlice` auto-survey
+ * coordination).
+ *
+ *   HIDDEN     — outside sensor range; nothing known.
+ *   SIGHTED    — within sensor range; cell shape visible, contents unknown.
+ *   SURVEYED   — within auto-survey range OR explicitly surveyed; contents
+ *                known (resource distribution and current infestation).
+ *   DEVELOPED  — terraformed and available for building placement.
+ *
+ * See CONTEXT.md (Cell knowledge state) and docs/adr/0002.
+ */
 export enum HexCellState {
-  REVEALED = "Revealed",
   HIDDEN = "Hidden",
+  SIGHTED = "Sighted",
+  SURVEYED = "Surveyed",
   DEVELOPED = "Developed",
 }
 

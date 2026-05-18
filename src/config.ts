@@ -10,3 +10,11 @@ export const MAP_SIZE = 5
 // The absolute storage capacity of a warehouse is the derived product.
 export const WAREHOUSE_UNIT_CAPACITY = 8
 export const WAREHOUSE_UNITS = 20
+
+// SENSOR / SURVEY CONFIG
+// SENSOR_RANGE is the radius (in hex steps) around any developed cell within
+// which other cells are at least `sighted`. Cells at distance ≤ 1 auto-survey
+// to `surveyed` for free; cells at distance 2..SENSOR_RANGE become `sighted`
+// and require an explicit Survey action to reach `surveyed`. Defaults to 1
+// (only immediate neighbors known); research and certain buildings extend it.
+export const SENSOR_RANGE = 1

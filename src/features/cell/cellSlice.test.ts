@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest"
-import { cellSlice, addCells, addToWarehouse } from "./cellSlice"
+import {
+  cellSlice,
+  addCells,
+  addToWarehouse,
+  cellSurveyed,
+  terraformCell,
+} from "./cellSlice"
 import { getCellId } from "./utils"
 import { getResourceQuantity } from "./warehouse"
 import {
@@ -40,6 +46,84 @@ const seed = (cell: NewCell = makeCell()) =>
   )
 
 const cellIdOf = (cell: NewCell) => getCellId(cell, PLANET_ID)
+
+describe("auto-survey on addCells", () => {
+  it("promotes a hidden neighbor of a developed cell to surveyed", () => {
+    const developed = makeCell({
+      q: 0,
+      r: 0,
+      state: HexCellState.DEVELOPED,
+    })
+    const neighbor = makeCell({
+      q: 1,
+      r: 0,
+      state: HexCellState.HIDDEN,
+    })
+
+    const state = cellSlice.reducer(
+      undefined,
+      addCells({ cells: [developed, neighbor], planetId: PLANET_ID }),
+    )
+
+    expect(state.entities[cellIdOf(neighbor)]?.state).toBe(
+      HexCellState.SURVEYED,
+    )
+  })
+})
+
+describe("cellSurveyed", () => {
+  it("promotes a sighted cell to surveyed", () => {
+    const cell = makeCell({ q: 0, r: 0, state: HexCellState.SIGHTED })
+    const cellId = cellIdOf(cell)
+    const initial = cellSlice.reducer(
+      undefined,
+      addCells({ cells: [cell], planetId: PLANET_ID }),
+    )
+
+    const next = cellSlice.reducer(initial, cellSurveyed({ cellId }))
+
+    expect(next.entities[cellId]?.state).toBe(HexCellState.SURVEYED)
+  })
+})
+
+describe("terraformCell", () => {
+  it("rejects a hidden cell — terraform requires a surveyed cell first", () => {
+    const cell = makeCell({ q: 0, r: 0, state: HexCellState.HIDDEN })
+    const cellId = cellIdOf(cell)
+    const initial = cellSlice.reducer(
+      undefined,
+      addCells({ cells: [cell], planetId: PLANET_ID }),
+    )
+
+    const next = cellSlice.reducer(initial, terraformCell({ cellId }))
+
+    expect(next.entities[cellId]?.state).toBe(HexCellState.HIDDEN)
+  })
+
+  it("promotes a surveyed cell to developed", () => {
+    // The neighbor at (1,0) starts hidden but is auto-surveyed by the
+    // developed center cell, so it is `surveyed` after addCells — the
+    // precondition for terraform.
+    const developed = makeCell({
+      q: 0,
+      r: 0,
+      state: HexCellState.DEVELOPED,
+    })
+    const neighbor = makeCell({ q: 1, r: 0, state: HexCellState.HIDDEN })
+    const neighborId = cellIdOf(neighbor)
+    const initial = cellSlice.reducer(
+      undefined,
+      addCells({ cells: [developed, neighbor], planetId: PLANET_ID }),
+    )
+
+    const next = cellSlice.reducer(
+      initial,
+      terraformCell({ cellId: neighborId }),
+    )
+
+    expect(next.entities[neighborId]?.state).toBe(HexCellState.DEVELOPED)
+  })
+})
 
 describe("addToWarehouse", () => {
   it("clips a distinct-resource add when no free storage unit remains", () => {

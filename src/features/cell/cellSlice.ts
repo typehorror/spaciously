@@ -27,7 +27,9 @@ import {
 import { type RootState } from "@/app/store"
 import { type ProductRecipe } from "../production/types"
 import { productionSlice } from "../production/productionSlice"
-import { WAREHOUSE_UNIT_CAPACITY } from "@/config"
+import { SENSOR_RANGE, WAREHOUSE_UNIT_CAPACITY } from "@/config"
+import { computeSensorCoverage } from "../survey/range"
+import { getNeighborCoords } from "../map/utils"
 
 const cellAdapter = createEntityAdapter({
   selectId: (cell: Cell) => cell.id,
@@ -35,6 +37,64 @@ const cellAdapter = createEntityAdapter({
 })
 
 export type CellIndex = Record<string, Cell | undefined>
+
+// Strict ordering used to enforce knowledge-state stickiness: a cell may only
+// move upward through these states (hidden → sighted → surveyed → developed).
+// `promoteKnowledgeStates` never downgrades.
+const KNOWLEDGE_RANK: Record<HexCellState, number> = {
+  [HexCellState.HIDDEN]: 0,
+  [HexCellState.SIGHTED]: 1,
+  [HexCellState.SURVEYED]: 2,
+  [HexCellState.DEVELOPED]: 3,
+}
+
+/**
+ * Cross-cell coordination: after any mutation that may have changed the set
+ * of developed cells on a planet, re-derive which non-developed cells should
+ * be at least `sighted` or `surveyed` and promote them. Stickiness lives
+ * here — we only promote upward, never downgrade.
+ *
+ * Operates on the slice's draft state directly (Immer); call it from inside
+ * a reducer after `cellAdapter` writes have landed.
+ */
+function promoteKnowledgeStates(
+  state: ReturnType<typeof cellAdapter.getInitialState>,
+  planetId: number,
+): void {
+  const cellsOnPlanet: Cell[] = []
+  const developedCellIds = new Set<string>()
+  for (const cell of Object.values(state.entities)) {
+    if (cell.planetId !== planetId) continue
+    cellsOnPlanet.push(cell)
+    if (cell.state === HexCellState.DEVELOPED) {
+      developedCellIds.add(cell.id)
+    }
+  }
+  if (developedCellIds.size === 0) return
+
+  const getNeighbors = (cellId: string): string[] => {
+    const { q, r } = parseCellId(cellId)
+    return getNeighborCoords({ q, r }, cellsOnPlanet).map(coord =>
+      getCellId(coord, planetId),
+    )
+  }
+
+  const coverage = computeSensorCoverage(
+    developedCellIds,
+    SENSOR_RANGE,
+    getNeighbors,
+  )
+
+  const promote = (cellId: string, atLeast: HexCellState): void => {
+    const current = state.entities[cellId]
+    if (!current) return
+    if (KNOWLEDGE_RANK[current.state] < KNOWLEDGE_RANK[atLeast]) {
+      current.state = atLeast
+    }
+  }
+  for (const cellId of coverage.autoSurveyed) promote(cellId, HexCellState.SURVEYED)
+  for (const cellId of coverage.sighted) promote(cellId, HexCellState.SIGHTED)
+}
 
 export const cellSlice = createAppSlice({
   name: "cell",
@@ -52,6 +112,7 @@ export const cellSlice = createAppSlice({
         }),
       )
       cellAdapter.addMany(state, cells)
+      promoteKnowledgeStates(state, action.payload.planetId)
     },
 
     consumeRecipe: (
@@ -117,6 +178,39 @@ export const cellSlice = createAppSlice({
       })
     },
 
+    cellSurveyed: (state, action: PayloadAction<{ cellId: string }>) => {
+      // The completion side of the Survey action. Player-facing entry is a
+      // task dispatched against a `sighted` cell beyond auto-survey range;
+      // on completion the task dispatches this action.
+      //
+      // Idempotent: re-dispatching against a `surveyed`/`developed` cell is
+      // a no-op (the cell already knows at least as much). Dispatching
+      // against a `hidden` cell is rejected — you cannot survey what is not
+      // even sighted.
+      const { cellId } = action.payload
+      const cell = cellAdapter.getSelectors().selectById(state, cellId)
+
+      if (!cell) {
+        console.warn(`Cannot survey cell ${cellId}, cell not found`)
+        return
+      }
+
+      if (KNOWLEDGE_RANK[cell.state] >= KNOWLEDGE_RANK[HexCellState.SURVEYED]) {
+        return
+      }
+      if (cell.state === HexCellState.HIDDEN) {
+        console.warn(
+          `Cell ${cellId} cannot be surveyed from state ${cell.state}; must be at least ${HexCellState.SIGHTED}`,
+        )
+        return
+      }
+
+      cellAdapter.updateOne(state, {
+        id: cellId,
+        changes: { state: HexCellState.SURVEYED },
+      })
+    },
+
     terraformCell: (state, action: PayloadAction<{ cellId: string }>) => {
       const { cellId } = action.payload
       const cell = cellAdapter.getSelectors().selectById(state, cellId)
@@ -126,8 +220,13 @@ export const cellSlice = createAppSlice({
         return
       }
 
-      if (cell.state === HexCellState.DEVELOPED) {
-        console.warn(`Cell ${cellId} is already developed`)
+      // Terraform now requires a surveyed cell — you cannot terraform what
+      // you have not surveyed. See CONTEXT.md (Cell knowledge state) and
+      // ADR-0002 §4.
+      if (cell.state !== HexCellState.SURVEYED) {
+        console.warn(
+          `Cell ${cellId} cannot be terraformed from state ${cell.state}; must be ${HexCellState.SURVEYED}`,
+        )
         return
       }
 
@@ -137,6 +236,7 @@ export const cellSlice = createAppSlice({
           state: HexCellState.DEVELOPED,
         },
       })
+      promoteKnowledgeStates(state, parseCellId(cellId).planetId)
     },
   },
 
@@ -209,8 +309,13 @@ export const cellSlice = createAppSlice({
   },
 })
 
-export const { addCells, terraformCell, addToWarehouse, consumeRecipe } =
-  cellSlice.actions
+export const {
+  addCells,
+  addToWarehouse,
+  cellSurveyed,
+  consumeRecipe,
+  terraformCell,
+} = cellSlice.actions
 // export const { getCellByCoord, getCellIndex } = cellSlice.selectors
 
 export const { selectAll: getAllCells, selectById: getCellById } =
