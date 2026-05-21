@@ -57,3 +57,22 @@ export const BLOOM_RESOURCE_CAP_PER_UNIT = {
   Plasma: 0,
   Isotopes: 0,
 }
+
+// INFECTION CONFIG
+// The starting planet's first-contact event (ADR-0002 §9, CONTEXT.md
+// "Infection"). Fires exactly once per game when both floors are met:
+//
+//   - INFECTION_TIME_FLOOR_MS — elapsed game time since startGame()
+//   - INFECTION_DEVELOPED_CELL_FLOOR — count of developed cells on the
+//     starting planet
+//   - INFECTION_BUILDING_FLOOR — count of player buildings on the
+//     starting planet
+//
+// On fire, the chosen developed cell's infestation jumps to
+// INFECTION_INITIAL_INFESTATION_RATIO of its per-cell cap. Numbers are
+// tunable starting points; the brief calls out "~10 minutes" and "~30%
+// of cap" as the design intent.
+export const INFECTION_TIME_FLOOR_MS = 10 * 60 * 1000
+export const INFECTION_DEVELOPED_CELL_FLOOR = 3
+export const INFECTION_BUILDING_FLOOR = 5
+export const INFECTION_INITIAL_INFESTATION_RATIO = 0.3

@@ -3,8 +3,9 @@
  *
  * Dev-only section inside the cell inspector. Displays the cell's current
  * infestation and offers a "Seed Bloom" button that bumps it by a fixed
- * amount — the way to manually exercise the simulator before the infection
- * event (slice #7) is wired to seed patient zero.
+ * amount — useful for exercising the simulator on demand and for staging
+ * combat scenarios that the scripted infection event (InfectionTicker)
+ * does not produce on its own.
  *
  * Rendered inside CellInformation for every cell, regardless of knowledge
  * or claim state. The button is harmless on developed cells too — useful

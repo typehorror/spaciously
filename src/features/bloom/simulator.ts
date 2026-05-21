@@ -123,6 +123,18 @@ export function simulateTick(input: SimulateTickInput): Map<string, number> {
 }
 
 /**
+ * Resolve a cell's bloom cap (max infestation) from its resource
+ * composition. Exposed for callers that need to size seeding amounts
+ * against the same cap the simulator uses — currently the infection
+ * event, which seeds at a configurable ratio of cap.
+ */
+export function resolveCellCap(
+  resources: Record<ResourceName, number>,
+): number {
+  return resolveRates(resources).cap
+}
+
+/**
  * Resolve per-cell Bloom rates from the cell's resource composition. The
  * direction of each resource's effect is committed in ADR-0002 §3; the
  * specific coefficients live in `config.ts` and tune during playtest.

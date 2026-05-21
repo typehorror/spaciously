@@ -24,6 +24,8 @@ import {
 } from "@/features/cell/cellSlice"
 import { type Cell } from "@/features/cell/types"
 import { toast } from "sonner"
+import { selectPatientZeroBuildingId } from "@/features/infection/infectionSlice"
+import { BiohazardIcon } from "lucide-react"
 
 interface Props {
   cell: Cell
@@ -43,6 +45,8 @@ export const CreatedBuildingButton: React.FC<Props> = ({
   const dispatch = useAppDispatch()
   const [open, setOpen] = useState(false)
   const healthRatio = building.health / building.maxHealth
+  const patientZeroBuildingId = useAppSelector(selectPatientZeroBuildingId)
+  const isPatientZero = patientZeroBuildingId === building.id
 
   const renderRecipeInputs = (recipe: ProductRecipe) => {
     return recipe.inputs.map(input => (
@@ -129,8 +133,26 @@ export const CreatedBuildingButton: React.FC<Props> = ({
       <DialogTrigger asChild>
         <button
           type="button"
-          className="flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md bg-white/[0.03] border border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/5 text-white/80 transition"
+          className={`relative flex justify-center items-center flex-col gap-1 w-full h-32 rounded-md bg-white/[0.03] border text-white/80 transition ${
+            isPatientZero
+              ? "border-fuchsia-400/60 hover:border-fuchsia-300 hover:bg-fuchsia-500/10"
+              : "border-white/10 hover:border-cyan-400/50 hover:bg-cyan-400/5"
+          }`}
+          aria-label={
+            isPatientZero
+              ? `${building.name} — patient zero`
+              : building.name
+          }
         >
+          {isPatientZero && (
+            <span
+              className="absolute top-1.5 right-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-fuchsia-500/20 ring-1 ring-fuchsia-400/60"
+              title="Patient zero — the Bloom hosted here first."
+              aria-hidden
+            >
+              <BiohazardIcon className="w-3 h-3 text-fuchsia-200" />
+            </span>
+          )}
           <div className="font-semibold text-white">{building.name}</div>
           <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300/60">
             Level {building.level}
