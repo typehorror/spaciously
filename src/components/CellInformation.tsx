@@ -22,6 +22,7 @@ import { selectCellByCoords } from "@/features/cell/cellSlice"
 
 import UnoccupiedCellInformation from "./UnoccupiedCellInformation"
 import DevelopedCellPanel from "./DevelopedCellPanel"
+import { BloomDevControls } from "@/features/bloom/BloomDevControls"
 import { HexCellState } from "@/features/cell/types"
 import { ScanSearchIcon } from "lucide-react"
 import { type ReactNode } from "react"
@@ -66,10 +67,15 @@ export const CellInformation = () => {
     <ConsoleFrame>
       {!focusedCell ? (
         <EmptyState />
-      ) : focusedCell.state === HexCellState.DEVELOPED ? (
-        <DevelopedCellPanel cell={focusedCell} />
       ) : (
-        <UnoccupiedCellInformation cell={focusedCell} />
+        <>
+          {focusedCell.state === HexCellState.DEVELOPED ? (
+            <DevelopedCellPanel cell={focusedCell} />
+          ) : (
+            <UnoccupiedCellInformation cell={focusedCell} />
+          )}
+          <BloomDevControls cell={focusedCell} />
+        </>
       )}
     </ConsoleFrame>
   )
